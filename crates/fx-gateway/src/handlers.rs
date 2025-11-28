@@ -1,12 +1,6 @@
 //! HTTP handlers for the gateway
 
-use axum::{
-    extract::State,
-    http::StatusCode,
-    response::Json,
-    routing::get,
-    Router,
-};
+use axum::{extract::State, http::StatusCode, response::Json, routing::get, Router};
 use serde_json::{json, Value};
 
 /// Health check endpoint
@@ -24,4 +18,3 @@ pub async fn root() -> Json<Value> {
         "version": "0.1.0"
     }))
 }
-

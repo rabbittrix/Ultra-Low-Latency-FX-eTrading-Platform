@@ -4,8 +4,7 @@
 //! used across all services in the platform.
 
 pub mod error;
-pub mod types;
 pub mod time;
+pub mod types;
 
 pub use error::{Error, Result};
-

@@ -1,8 +1,8 @@
 //! Risk engine implementation
 
 use crate::limits::RiskLimits;
-use fx_utils::{OrderId, Quantity, Result, Side};
 use dashmap::DashMap;
+use fx_utils::{OrderId, Quantity, Result, Side};
 use std::sync::Arc;
 
 /// Current position for an instrument
@@ -94,4 +94,3 @@ impl RiskEngine {
         self.open_orders.remove(&order_id);
     }
 }
-

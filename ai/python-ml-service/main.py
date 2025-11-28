@@ -9,11 +9,12 @@ Email: rabbittrix@hotmail.com
 License: Apache-2.0
 """
 
+import logging
+from typing import Optional
+
+import numpy as np
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-import numpy as np
-from typing import Optional
-import logging
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -55,12 +56,12 @@ async def health():
 async def predict_volatility(request: VolatilityRequest):
     """
     Predict short-term volatility for an instrument.
-    
+
     This is a mock implementation. In production, this would use
     a trained model (ONNX, LightGBM, XGBoost, etc.)
     """
     logger.info(f"Predicting volatility for {request.instrument}")
-    
+
     # Mock volatility prediction
     # In production, this would use actual ML models
     base_volatility = 0.0015  # 15 bps
@@ -84,6 +85,7 @@ async def root():
 
 
 if __name__ == "__main__":
-    import uvicorn
+    import uvicorn  # type: ignore[import-untyped]
+
     uvicorn.run(app, host="0.0.0.0", port=8086)
 
