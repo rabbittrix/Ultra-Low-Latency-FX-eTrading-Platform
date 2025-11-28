@@ -232,9 +232,7 @@ async fn handle_websocket(socket: axum::extract::ws::WebSocket, state: AppState)
             });
 
             if let Err(e) = sender
-                .send(Message::Text(
-                    serde_json::to_string(&quote_json).unwrap().into(),
-                ))
+                .send(Message::Text(serde_json::to_string(&quote_json).unwrap()))
                 .await
             {
                 tracing::error!(error = %e, "Failed to send WebSocket message");

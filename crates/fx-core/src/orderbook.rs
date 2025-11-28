@@ -83,4 +83,8 @@ impl OrderBook {
     pub fn asks_mut(&mut self) -> &mut Vec<Level> {
         &mut self.asks
     }
+
+    pub fn instrument(&self) -> &str {
+        &self.instrument
+    }
 }

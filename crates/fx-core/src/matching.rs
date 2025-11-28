@@ -1,7 +1,9 @@
 //! Matching engine algorithm
 
+use crate::audit_log::{AuditEvent, AuditEventType, AuditLog};
 use crate::order::Order;
 use crate::orderbook::OrderBook;
+use crate::trade_log::TradeLog;
 use fx_utils::{Price, Quantity, Side, TradeId};
 use std::sync::Arc;
 use uuid::Uuid;
@@ -27,16 +29,47 @@ pub struct Trade {
 /// Matching engine implementation
 pub struct MatchingEngine {
     orderbook: OrderBook,
+    trade_log: Arc<TradeLog>,
+    audit_log: Arc<AuditLog>,
 }
 
 impl MatchingEngine {
     pub fn new(instrument: String) -> Self {
         Self {
             orderbook: OrderBook::new(instrument),
+            trade_log: Arc::new(TradeLog::new(10_000)),
+            audit_log: Arc::new(AuditLog::new(10_000)),
         }
     }
 
+    /// Get reference to trade log
+    pub fn trade_log(&self) -> &Arc<TradeLog> {
+        &self.trade_log
+    }
+
+    /// Get reference to audit log
+    pub fn audit_log(&self) -> &Arc<AuditLog> {
+        &self.audit_log
+    }
+
+    /// Get mutable reference to orderbook (for testing)
+    pub fn orderbook_mut(&mut self) -> &mut OrderBook {
+        &mut self.orderbook
+    }
+
+    /// Get reference to orderbook (for testing and internal use)
+    pub fn orderbook(&self) -> &OrderBook {
+        &self.orderbook
+    }
+
     pub fn match_order(&mut self, order: Arc<Order>) -> MatchResult {
+        // Log order submission
+        self.audit_log.add_event(AuditEvent::from_order(
+            AuditEventType::OrderSubmitted,
+            &order,
+            None,
+        ));
+
         let mut trades = Vec::new();
         let mut remaining_order = (*order).clone();
 
@@ -90,7 +123,8 @@ impl MatchingEngine {
                     timestamp_ns: fx_utils::time::now_nanos(),
                 };
 
-                trades.push(trade);
+                trades.push(trade.clone());
+                self.trade_log.add_trade(trade);
                 remaining_order.fill(trade_qty);
 
                 // Update counter order
@@ -119,12 +153,53 @@ impl MatchingEngine {
         if !remaining_order.is_filled() {
             if let Some(_price) = remaining_order.price {
                 self.orderbook.add_order(remaining_order_arc.clone());
+                // Log partial fill
+                if !trades.is_empty() {
+                    self.audit_log.add_event(AuditEvent::from_order(
+                        AuditEventType::OrderPartiallyFilled,
+                        &remaining_order,
+                        Some(format!("Filled {} trades", trades.len())),
+                    ));
+                }
+            } else {
+                // Market order not fully filled - reject remaining
+                self.audit_log.add_event(AuditEvent::from_order(
+                    AuditEventType::OrderRejected,
+                    &remaining_order,
+                    Some("Market order not fully filled".to_string()),
+                ));
             }
+        } else {
+            // Order fully filled
+            self.audit_log.add_event(AuditEvent::from_order(
+                AuditEventType::OrderFilled,
+                &remaining_order,
+                Some(format!("Filled {} trades", trades.len())),
+            ));
         }
 
         MatchResult {
             trades,
             order: remaining_order_arc,
         }
+    }
+
+    /// Cancel an order
+    pub fn cancel_order(&mut self, order_id: fx_utils::OrderId) -> bool {
+        // TODO: Implement order cancellation from orderbook
+        // For now, just log the cancellation attempt
+        // In a full implementation, we'd need to search and remove from orderbook
+        self.audit_log.add_event(AuditEvent {
+            event_type: AuditEventType::OrderCancelled,
+            order_id,
+            instrument: self.orderbook.instrument().to_string(),
+            side: Side::Buy,                        // Placeholder
+            order_type: fx_utils::OrderType::Limit, // Placeholder
+            quantity: 0,
+            price: None,
+            timestamp_ns: fx_utils::time::now_nanos(),
+            message: Some("Order cancellation requested".to_string()),
+        });
+        true
     }
 }
