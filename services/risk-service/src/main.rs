@@ -19,7 +19,7 @@ async fn main() -> Result<()> {
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8084")
         .await
-        .map_err(|e| fx_utils::Error::Io(e))?;
+        .map_err(fx_utils::Error::Io)?;
 
     info!("Risk Service listening on http://0.0.0.0:8084");
     axum::serve(listener, app)
