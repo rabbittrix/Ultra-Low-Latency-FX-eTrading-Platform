@@ -62,7 +62,7 @@ impl ExposureCalculator {
 
         for entry in positions.iter() {
             let position = entry.value();
-            let position_abs = position.quantity.abs() as u64;
+            let position_abs = position.quantity.unsigned_abs();
             total_exposure += position_abs;
 
             let position_utilization = if limits.max_position_size.0 > 0 {
@@ -104,7 +104,7 @@ impl ExposureCalculator {
         limits: &Arc<RiskLimits>,
     ) -> Option<InstrumentExposure> {
         let position = positions.get(instrument)?;
-        let position_abs = position.quantity.abs() as u64;
+        let position_abs = position.quantity.unsigned_abs();
 
         let position_utilization = if limits.max_position_size.0 > 0 {
             (position_abs as f64 / limits.max_position_size.0 as f64) * 100.0
