@@ -14,6 +14,7 @@ pub struct Level {
 
 /// Lock-free order book using atomic operations
 pub struct OrderBook {
+    #[allow(dead_code)]
     instrument: String,
     bids: Vec<Level>, // Sorted descending (highest first)
     asks: Vec<Level>, // Sorted ascending (lowest first)

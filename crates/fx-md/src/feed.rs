@@ -14,7 +14,14 @@ pub struct MarketDataFeed {
 impl MarketDataFeed {
     pub fn new(instrument: String) -> (Self, broadcast::Receiver<Quote>) {
         let (tx, _) = broadcast::channel(1024);
-        (Self { instrument, tx }, tx.subscribe())
+        let rx = tx.subscribe();
+        (
+            Self {
+                instrument,
+                tx: tx.clone(),
+            },
+            rx,
+        )
     }
 
     pub fn publish(&self, quote: Quote) -> Result<()> {

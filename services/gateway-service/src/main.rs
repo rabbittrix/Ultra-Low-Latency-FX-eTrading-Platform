@@ -19,10 +19,15 @@ async fn main() -> Result<()> {
     info!("Starting Gateway Service");
 
     let openapi = GatewayApi::openapi();
+    let openapi_for_route = openapi.clone();
 
     let app = Router::new()
         .route("/", get(handlers::root))
         .route("/health", get(handlers::health))
+        .route(
+            "/api-docs/openapi.json",
+            get(move || async move { axum::Json(openapi_for_route) }),
+        )
         .merge(SwaggerUi::new("/docs").url("/api-docs/openapi.json", openapi))
         .layer(CorsLayer::permissive());
 

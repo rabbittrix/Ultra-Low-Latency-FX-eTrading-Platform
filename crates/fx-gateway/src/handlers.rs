@@ -1,6 +1,6 @@
 //! HTTP handlers for the gateway
 
-use axum::{extract::State, http::StatusCode, response::Json, routing::get, Router};
+use axum::response::Json;
 use serde_json::{json, Value};
 
 /// Health check endpoint

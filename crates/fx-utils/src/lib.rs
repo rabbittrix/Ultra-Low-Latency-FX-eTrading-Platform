@@ -8,3 +8,4 @@ pub mod time;
 pub mod types;
 
 pub use error::{Error, Result};
+pub use types::{CurrencyPair, InstrumentId, OrderId, OrderType, Price, Quantity, Side, TradeId};

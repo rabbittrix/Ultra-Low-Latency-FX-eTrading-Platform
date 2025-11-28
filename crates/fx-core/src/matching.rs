@@ -38,7 +38,7 @@ impl MatchingEngine {
 
     pub fn match_order(&mut self, order: Arc<Order>) -> MatchResult {
         let mut trades = Vec::new();
-        let mut remaining_order = order.clone();
+        let mut remaining_order = (*order).clone();
 
         // Match against opposite side
         let opposite_levels = match order.side {
@@ -94,7 +94,7 @@ impl MatchingEngine {
                 remaining_order.fill(trade_qty);
 
                 // Update counter order
-                let mut updated_counter = (*counter_order).clone();
+                let mut updated_counter = (**counter_order).clone();
                 updated_counter.fill(trade_qty);
                 level.orders[level_idx] = Arc::new(updated_counter);
 
@@ -115,15 +115,16 @@ impl MatchingEngine {
         }
 
         // Add remaining order to book if not fully filled
+        let remaining_order_arc = Arc::new(remaining_order.clone());
         if !remaining_order.is_filled() {
-            if let Some(price) = remaining_order.price {
-                self.orderbook.add_order(Arc::new(remaining_order.clone()));
+            if let Some(_price) = remaining_order.price {
+                self.orderbook.add_order(remaining_order_arc.clone());
             }
         }
 
         MatchResult {
             trades,
-            order: Arc::new(remaining_order),
+            order: remaining_order_arc,
         }
     }
 }

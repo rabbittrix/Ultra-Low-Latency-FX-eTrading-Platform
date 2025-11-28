@@ -67,7 +67,7 @@ async def predict_volatility(request: VolatilityRequest):
     base_volatility = 0.0015  # 15 bps
     noise = np.random.normal(0, 0.0005)
     predicted_vol = max(0.0001, base_volatility + noise)
-    
+
     return VolatilityResponse(
         instrument=request.instrument,
         predicted_volatility=predicted_vol,

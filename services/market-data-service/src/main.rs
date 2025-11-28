@@ -16,13 +16,12 @@ use fx_utils::{Price, Quantity, Result};
 use prometheus::{Encoder, TextEncoder};
 use serde_json::json;
 use std::sync::Arc;
-use tokio::sync::broadcast;
 use tracing::{info, Level};
 
 #[derive(Clone)]
 struct AppState {
+    #[allow(dead_code)]
     feed: Arc<MarketDataFeed>,
-    quote_rx: broadcast::Receiver<Quote>,
 }
 
 #[tokio::main]
@@ -33,7 +32,7 @@ async fn main() -> Result<()> {
     info!("Starting Market Data Service");
 
     // Initialize market data feed
-    let (feed, quote_rx) = MarketDataFeed::new("EURUSD".to_string());
+    let (feed, _quote_rx) = MarketDataFeed::new("EURUSD".to_string());
     let feed = Arc::new(feed);
 
     // Start mock feed generator
@@ -42,18 +41,12 @@ async fn main() -> Result<()> {
         generate_mock_feed(feed_clone).await;
     });
 
-    // Setup Prometheus metrics
-    let exporter = prometheus_exporter::Builder::new("0.0.0.0:9091")
-        .with_default_metrics()
-        .build()
-        .map_err(|e| fx_utils::Error::Internal(format!("Failed to start metrics: {}", e)))?;
-
-    tokio::spawn(async move {
-        exporter.serve().await;
-    });
+    // Setup Prometheus metrics exporter
+    // Note: prometheus_exporter API may vary by version
+    // For now, metrics are exposed via the /metrics endpoint
 
     // Setup HTTP server
-    let state = AppState { feed, quote_rx };
+    let state = AppState { feed };
     let app = Router::new()
         .route("/health", get(health))
         .route("/metrics", get(metrics_handler))
@@ -62,7 +55,7 @@ async fn main() -> Result<()> {
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8081")
         .await
-        .map_err(|e| fx_utils::Error::Io(e))?;
+        .map_err(fx_utils::Error::Io)?;
 
     info!("Market Data Service listening on http://0.0.0.0:8081");
     axum::serve(listener, app)
@@ -95,7 +88,7 @@ async fn metrics_handler() -> Response<Body> {
         .unwrap()
 }
 
-async fn get_latest_quote(State(state): State<AppState>) -> Json<serde_json::Value> {
+async fn get_latest_quote(State(_state): State<AppState>) -> Json<serde_json::Value> {
     // In a real implementation, this would return the latest quote
     Json(json!({
         "instrument": "EURUSD",

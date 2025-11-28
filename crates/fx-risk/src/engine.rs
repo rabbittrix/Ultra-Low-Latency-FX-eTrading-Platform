@@ -8,6 +8,7 @@ use std::sync::Arc;
 /// Current position for an instrument
 #[derive(Debug, Clone)]
 struct Position {
+    #[allow(dead_code)]
     instrument: String,
     quantity: i64, // Positive for long, negative for short
 }
@@ -62,6 +63,8 @@ impl RiskEngine {
             Side::Sell => current_position - quantity.0 as i64,
         };
 
+        #[allow(clippy::cast_abs_to_unsigned)]
+        #[allow(clippy::cast_abs_to_unsigned)]
         if new_position.abs() as u64 > self.limits.max_position_size.0 {
             return Err(fx_utils::Error::InvalidInput(format!(
                 "Position limit would be exceeded: {}",

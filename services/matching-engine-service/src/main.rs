@@ -14,18 +14,19 @@ async fn main() -> Result<()> {
 
     info!("Starting Matching Engine Service");
 
+    #[allow(dead_code)]
     let _engine = MatchingEngine::new("EURUSD".to_string());
 
     let app = Router::new().route("/health", get(|| async { "healthy" }));
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8083")
         .await
-        .map_err(|e| fx_utils::Error::Io(e))?;
+        .map_err(fx_utils::Error::Io)?;
 
     info!("Matching Engine Service listening on http://0.0.0.0:8083");
     axum::serve(listener, app)
         .await
-        .map_err(|e| fx_utils::Error::Internal("Server error".to_string()))?;
+        .map_err(|e| fx_utils::Error::Internal(format!("Server error: {}", e)))?;
 
     Ok(())
 }

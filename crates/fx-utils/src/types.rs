@@ -45,7 +45,7 @@ impl Price {
     }
 
     /// Convert price to decimal
-    pub fn to_decimal(&self, decimals: u8) -> f64 {
+    pub fn to_decimal(self, decimals: u8) -> f64 {
         let divisor = 10_u64.pow(decimals as u32);
         self.0 as f64 / divisor as f64
     }
