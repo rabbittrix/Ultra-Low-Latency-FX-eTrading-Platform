@@ -3,6 +3,7 @@
 //! Pre-trade risk checks, position tracking, and exposure calculation.
 
 mod handlers;
+mod metrics;
 
 use axum::{
     routing::{get, post},
@@ -11,6 +12,7 @@ use axum::{
 use fx_risk::{RiskEngine, RiskLimits};
 use fx_utils::Result;
 use handlers::AppState;
+use prometheus::Registry;
 use serde_json::json;
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -25,8 +27,15 @@ async fn main() -> Result<()> {
     let engine = Arc::new(Mutex::new(RiskEngine::new(RiskLimits::default())));
     let app_state = AppState::new(engine);
 
+    // Initialize Prometheus metrics
+    let registry = Registry::new();
+    let _metrics = Arc::new(
+        metrics::Metrics::new(&registry).map_err(|e| fx_utils::Error::Prometheus(e.to_string()))?,
+    );
+
     let app = Router::new()
         .route("/health", get(health))
+        .route("/metrics", get(metrics::metrics_handler))
         .route("/check", post(handlers::check_order))
         .route("/position/:instrument", get(handlers::get_position))
         .route("/exposure", get(handlers::get_exposure_summary))

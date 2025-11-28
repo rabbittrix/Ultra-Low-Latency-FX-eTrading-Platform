@@ -3,7 +3,8 @@
 use fx_core::{MatchingEngine, Order};
 use fx_proto::fx::etrading::{
     matching_engine_service_server::MatchingEngineService, CancelOrderRequest, Order as ProtoOrder,
-    OrderResponse as ProtoOrderResponse, Side as ProtoSide, Trade as ProtoTrade,
+    OrderResponse as ProtoOrderResponse, OrderType as ProtoOrderType, Side as ProtoSide,
+    Trade as ProtoTrade,
 };
 use fx_utils::{OrderType, Price, Quantity, Side};
 use parking_lot::Mutex;
@@ -38,11 +39,11 @@ impl MatchingEngineService for MatchingEngineGrpcService {
         };
 
         let order_type = match proto_order.order_type() {
-            fx_proto::fx::etrading::OrderType::Market => OrderType::Market,
-            fx_proto::fx::etrading::OrderType::Limit => OrderType::Limit,
-            fx_proto::fx::etrading::OrderType::Stop => OrderType::Stop,
-            fx_proto::fx::etrading::OrderType::Ioc => OrderType::IoC,
-            fx_proto::fx::etrading::OrderType::Fok => OrderType::FoK,
+            ProtoOrderType::Market => OrderType::Market,
+            ProtoOrderType::Limit => OrderType::Limit,
+            ProtoOrderType::Stop => OrderType::Stop,
+            ProtoOrderType::Ioc => OrderType::IoC,
+            ProtoOrderType::Fok => OrderType::FoK,
         };
 
         let price = if proto_order.price == 0 {

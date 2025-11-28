@@ -1,0 +1,18 @@
+# Grafana dashboard provisioning configuration
+# 
+# @author Roberto de Souza <rabbittrix@hotmail.com>
+# @license Apache-2.0
+
+apiVersion: 1
+
+providers:
+  - name: 'FX Trading Platform'
+    orgId: 1
+    folder: ''
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards
+

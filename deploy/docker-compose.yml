@@ -1,10 +1,8 @@
-version: "3.8"
-
 services:
   # Rust Services
   market-data-service:
     build:
-      context: ../..
+      context: ..
       dockerfile: deploy/Dockerfile.market-data
     ports:
       - "8081:8081"
@@ -23,7 +21,7 @@ services:
 
   pricing-service:
     build:
-      context: ../..
+      context: ..
       dockerfile: deploy/Dockerfile.pricing
     ports:
       - "8082:8082"
@@ -36,8 +34,8 @@ services:
     depends_on:
       market-data-service:
         condition: service_healthy
-      python-ml-service:
-        condition: service_started
+      # python-ml-service:  # Temporarily disabled due to SSL build issues
+      #   condition: service_started
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
       interval: 10s
@@ -48,7 +46,7 @@ services:
 
   matching-engine-service:
     build:
-      context: ../..
+      context: ..
       dockerfile: deploy/Dockerfile.matching-engine
     ports:
       - "8083:8083"
@@ -68,7 +66,7 @@ services:
 
   risk-service:
     build:
-      context: ../..
+      context: ..
       dockerfile: deploy/Dockerfile.risk
     ports:
       - "8084:8084"
@@ -87,7 +85,7 @@ services:
 
   router-service:
     build:
-      context: ../..
+      context: ..
       dockerfile: deploy/Dockerfile.router
     ports:
       - "8085:8085"
@@ -106,7 +104,7 @@ services:
 
   gateway-service:
     build:
-      context: ../..
+      context: ..
       dockerfile: deploy/Dockerfile.gateway
     ports:
       - "8080:8080"
@@ -141,7 +139,7 @@ services:
   # Frontend
   frontend:
     build:
-      context: ../../frontend/nextjs-trading-ui
+      context: ../frontend/nextjs-trading-ui
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
@@ -164,7 +162,7 @@ services:
   # AI Service
   python-ml-service:
     build:
-      context: ../../ai/python-ml-service
+      context: ../ai/python-ml-service
       dockerfile: Dockerfile
     ports:
       - "8086:8086"
@@ -217,8 +215,8 @@ services:
       - GF_INSTALL_PLUGINS=
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
-      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
     networks:
       - fx-network
     depends_on:

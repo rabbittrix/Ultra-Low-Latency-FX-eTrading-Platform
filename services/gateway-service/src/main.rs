@@ -3,6 +3,7 @@
 //! Combined API gateway for frontend, aggregating all microservices.
 //! Provides REST endpoints, WebSocket streams, and Swagger/OpenAPI documentation.
 
+mod metrics;
 mod websocket;
 
 use axum::{
@@ -10,7 +11,9 @@ use axum::{
 };
 use fx_gateway::{handlers, GatewayApi};
 use fx_utils::Result;
+use prometheus::Registry;
 use std::net::SocketAddr;
+use std::sync::Arc;
 use tower_http::cors::CorsLayer;
 use tracing::{info, Level};
 use utoipa::OpenApi;
@@ -32,16 +35,18 @@ async fn main() -> Result<()> {
     });
 
     let openapi = GatewayApi::openapi();
-    let openapi_for_route = openapi.clone();
+
+    // Initialize Prometheus metrics
+    let registry = Registry::new();
+    let _metrics = Arc::new(
+        metrics::Metrics::new(&registry).map_err(|e| fx_utils::Error::Prometheus(e.to_string()))?,
+    );
 
     let app = Router::new()
         .route("/", get(handlers::root))
         .route("/health", get(handlers::health))
+        .route("/metrics", get(metrics::metrics_handler))
         .route("/ws", get(websocket_handler))
-        .route(
-            "/api-docs/openapi.json",
-            get(move || async move { axum::Json(openapi_for_route) }),
-        )
         .merge(SwaggerUi::new("/docs").url("/api-docs/openapi.json", openapi))
         .layer(CorsLayer::permissive())
         .with_state(ws_state);

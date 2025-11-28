@@ -2,10 +2,29 @@
 //!
 //! Routes orders to external venues with minimal latency overhead.
 
+mod metrics;
+
 use axum::{routing::get, Router};
 use fx_router::OrderRouter;
 use fx_utils::Result;
+use prometheus::Registry;
+use std::sync::Arc;
 use tracing::{info, Level};
+
+/// Application state shared across handlers
+#[derive(Clone)]
+struct AppState {
+    #[allow(dead_code)]
+    router: Arc<OrderRouter>,
+}
+
+impl AppState {
+    fn new(router: OrderRouter) -> Self {
+        Self {
+            router: Arc::new(router),
+        }
+    }
+}
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -13,9 +32,19 @@ async fn main() -> Result<()> {
 
     info!("Starting Router Service");
 
-    let _router = OrderRouter::new();
+    let router = OrderRouter::new();
+    let app_state = AppState::new(router);
 
-    let app = Router::new().route("/health", get(|| async { "healthy" }));
+    // Initialize Prometheus metrics
+    let registry = Registry::new();
+    let _metrics = Arc::new(
+        metrics::Metrics::new(&registry).map_err(|e| fx_utils::Error::Prometheus(e.to_string()))?,
+    );
+
+    let app = Router::new()
+        .route("/health", get(|| async { "healthy" }))
+        .route("/metrics", get(metrics::metrics_handler))
+        .with_state(app_state);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8085")
         .await

@@ -5,16 +5,21 @@
 
 mod grpc;
 mod handlers;
+mod metrics;
 
 use axum::{
     routing::{get, post},
     Json, Router,
 };
 use fx_core::MatchingEngine;
+use fx_proto::fx::etrading::matching_engine_service_server::MatchingEngineServiceServer;
 use fx_utils::Result;
 use parking_lot::Mutex;
+use prometheus::Registry;
 use serde_json::json;
 use std::sync::Arc;
+use tokio::net::TcpListener;
+use tonic::transport::Server;
 use tracing::{info, Level};
 
 #[tokio::main]
@@ -40,9 +45,16 @@ async fn main() -> Result<()> {
             });
     });
 
+    // Initialize Prometheus metrics
+    let registry = Registry::new();
+    let _metrics = Arc::new(
+        metrics::Metrics::new(&registry).map_err(|e| fx_utils::Error::Prometheus(e.to_string()))?,
+    );
+
     // Start REST API server
     let app = Router::new()
         .route("/health", get(health))
+        .route("/metrics", get(metrics::metrics_handler))
         .route("/orders", post(handlers::submit_order))
         .route("/orders/cancel", post(handlers::cancel_order))
         .route("/trades", get(handlers::get_trades))

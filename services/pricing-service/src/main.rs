@@ -4,6 +4,7 @@
 //! with AI/ML modules for volatility prediction.
 
 mod handlers;
+mod metrics;
 mod websocket;
 
 use axum::{
@@ -16,6 +17,7 @@ use axum::{
 use fx_pricing::{AiClient, PricingEngine};
 use fx_risk::{RiskEngine, RiskLimits};
 use fx_utils::Result;
+use prometheus::Registry;
 use serde_json::json;
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -44,8 +46,15 @@ async fn main() -> Result<()> {
 
     let app_state = handlers::AppState::new(engine);
 
+    // Initialize Prometheus metrics
+    let registry = Registry::new();
+    let _metrics = Arc::new(
+        metrics::Metrics::new(&registry).map_err(|e| fx_utils::Error::Prometheus(e.to_string()))?,
+    );
+
     let app = Router::new()
         .route("/health", get(health))
+        .route("/metrics", get(metrics::metrics_handler))
         .route("/prices", post(handlers::calculate_prices))
         .route("/ws", get(websocket_handler))
         .with_state(app_state);

@@ -5,6 +5,7 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
+build = "build.rs"
 
 [dependencies]
 prost = { workspace = true }
@@ -12,4 +13,4 @@ prost-types = { workspace = true }
 tonic = { workspace = true }
 
 [build-dependencies]
-tonic-build = { version = "0.11", features = ["prost"] }
+tonic-build = "0.11"

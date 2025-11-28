@@ -1,0 +1,125 @@
+{
+  "dashboard": {
+    "title": "FX Trading Platform - Overview",
+    "tags": ["fx-trading", "overview"],
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "version": 1,
+    "refresh": "10s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Service Health",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+        "targets": [
+          {
+            "expr": "up{job=~\"gateway-service|market-data-service|pricing-service|matching-engine-service|risk-service\"}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": { "mode": "thresholds" },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "value": 0, "color": "red" },
+                { "value": 1, "color": "green" }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Total Requests",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 6, "y": 0 },
+        "targets": [
+          {
+            "expr": "sum(rate(gateway_requests_total[5m]))",
+            "legendFormat": "Gateway Requests",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Order Processing Rate",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+        "targets": [
+          {
+            "expr": "rate(matching_engine_orders_submitted_total[5m])",
+            "legendFormat": "Orders Submitted",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(matching_engine_trades_executed_total[5m])",
+            "legendFormat": "Trades Executed",
+            "refId": "B"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Market Data Quotes",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+        "targets": [
+          {
+            "expr": "rate(market_data_quotes_published_total[5m])",
+            "legendFormat": "Quotes Published",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Risk Checks",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+        "targets": [
+          {
+            "expr": "rate(risk_checks_total[5m])",
+            "legendFormat": "Total Checks",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(risk_checks_passed_total[5m])",
+            "legendFormat": "Passed",
+            "refId": "B"
+          },
+          {
+            "expr": "rate(risk_checks_failed_total[5m])",
+            "legendFormat": "Failed",
+            "refId": "C"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "WebSocket Connections",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+        "targets": [
+          {
+            "expr": "gateway_active_websocket_clients",
+            "legendFormat": "Active Clients",
+            "refId": "A"
+          },
+          {
+            "expr": "market_data_active_subscribers",
+            "legendFormat": "Market Data Subscribers",
+            "refId": "B"
+          }
+        ]
+      }
+    ],
+    "time": {
+      "from": "now-15m",
+      "to": "now"
+    }
+  }
+}

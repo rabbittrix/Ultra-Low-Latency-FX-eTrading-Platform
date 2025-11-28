@@ -1,10 +1,20 @@
-FROM rust:1.82-slim as builder
+FROM rust:1.83-slim as builder
+
+# Install protoc, OpenSSL, and curl for proto compilation, TLS, and Swagger UI download
+RUN apt-get update && apt-get install -y \
+    protobuf-compiler \
+    libssl-dev \
+    pkg-config \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 COPY Cargo.toml Cargo.lock ./
 COPY crates ./crates
-COPY services/gateway-service ./services/gateway-service
+COPY services ./services
+# Copy proto files for fx-proto build (if needed)
+COPY crates/fx-proto/proto ./crates/fx-proto/proto
 
 RUN cargo build --release --bin gateway-service
 
