@@ -37,7 +37,7 @@ async fn main() -> Result<()> {
 
     let listener = tokio::net::TcpListener::bind(addr)
         .await
-        .map_err(|e| fx_utils::Error::Io(e))?;
+        .map_err(fx_utils::Error::Io)?;
 
     axum::serve(listener, app)
         .await
