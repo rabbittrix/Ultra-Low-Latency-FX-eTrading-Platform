@@ -13,7 +13,7 @@ import logging
 from typing import Optional
 
 import numpy as np
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from pydantic import BaseModel
 
 logging.basicConfig(level=logging.INFO)
@@ -88,4 +88,3 @@ if __name__ == "__main__":
     import uvicorn  # type: ignore[import-untyped]
 
     uvicorn.run(app, host="0.0.0.0", port=8086)
-
