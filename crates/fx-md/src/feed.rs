@@ -12,6 +12,13 @@ pub struct MarketDataFeed {
 }
 
 impl MarketDataFeed {
+    /// Get the number of active subscribers
+    pub fn receiver_count(&self) -> usize {
+        self.tx.receiver_count()
+    }
+}
+
+impl MarketDataFeed {
     pub fn new(instrument: String) -> (Self, broadcast::Receiver<Quote>) {
         let (tx, _) = broadcast::channel(1024);
         let rx = tx.subscribe();

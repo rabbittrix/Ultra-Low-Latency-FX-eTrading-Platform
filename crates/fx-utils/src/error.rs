@@ -22,6 +22,9 @@ pub enum Error {
 
     #[error("Internal error: {0}")]
     Internal(String),
+
+    #[error("Prometheus error: {0}")]
+    Prometheus(String),
 }
 
 /// Result type alias using the platform error type

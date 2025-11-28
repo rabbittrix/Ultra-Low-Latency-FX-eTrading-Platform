@@ -31,9 +31,13 @@ The platform follows a microservices architecture with the following components:
 1. **Market Data Service** (`market-data-service`)
 
    - Ingests and normalizes FX market data feeds
-   - Publishes L2/L3 order books
+   - Publishes L2/L3 order books via WebSocket and REST
+   - Real-time quote streaming over WebSocket (`/ws`)
+   - REST endpoint for latest quotes (`/quote`)
+   - Mock feed generator for multiple instruments (EURUSD, GBPUSD, USDJPY, AUDUSD)
+   - Prometheus metrics (quotes published, subscribers, latency)
    - Zero-copy messaging internally
-   - Port: `8081` (HTTP), `9091` (Metrics)
+   - Port: `8081` (HTTP/WebSocket), `/metrics` (Prometheus)
 
 2. **Pricing Engine** (`pricing-service`)
 

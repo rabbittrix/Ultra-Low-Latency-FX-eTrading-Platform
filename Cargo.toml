@@ -28,6 +28,7 @@ repository = "https://github.com/rabbittrix/Ultra-Low-Latency-FX-eTrading-Platfo
 # Async runtime
 tokio = { version = "1.40", features = ["full"] }
 tokio-stream = "0.1"
+futures-util = "0.3"
 
 # Web framework
 axum = { version = "0.7", features = ["macros", "ws"] }
@@ -40,8 +41,8 @@ tower-http = { version = "0.6", features = [
 
 # gRPC
 tonic = { version = "0.11", features = ["tls", "tls-roots"] }
-prost = "0.13"
-prost-types = "0.13"
+prost = "0.12"
+prost-types = "0.12"
 
 # OpenAPI/Swagger
 utoipa = { version = "5.4", features = ["axum_extras", "chrono"] }
