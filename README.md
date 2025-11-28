@@ -124,7 +124,13 @@ The platform follows a microservices architecture with the following components:
 └── deploy/
     ├── docker-compose.yml    # Complete stack orchestration
     ├── prometheus.yml        # Prometheus configuration
-    └── grafana/              # Grafana dashboards
+    ├── grafana/              # Grafana configuration
+    │   ├── provisioning/     # Grafana provisioning
+    │   │   ├── datasources/  # Datasource configurations
+    │   │   └── dashboards/    # Dashboard configurations
+    │   └── dashboards/       # Dashboard JSON files
+    ├── fluentd/              # Fluentd log aggregation
+    └── Dockerfile.*          # Service-specific Dockerfiles
 ```
 
 ## 🚀 Quick Start

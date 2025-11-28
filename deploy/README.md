@@ -22,12 +22,27 @@ Access Prometheus UI at: `http://localhost:9099`
 
 Grafana is pre-configured with:
 
-- **Prometheus Datasource**: Automatically configured
+- **Prometheus Datasource**: Automatically provisioned from `grafana/provisioning/datasources/datasource.yaml`
 - **Dashboards**:
   - FX Trading Platform - Overview
   - Matching Engine - Performance
   - Risk Service - Monitoring
   - Market Data Service - Monitoring
+
+**Configuration Structure:**
+
+```
+grafana/
+├── provisioning/
+│   ├── datasources/
+│   │   └── datasource.yaml    # Prometheus datasource config
+│   └── dashboards/
+│       └── dashboard.yml      # Dashboard provisioning config
+└── dashboards/                 # Dashboard JSON files
+    ├── fx-trading-overview.json
+    ├── matching-engine.json
+    └── ...
+```
 
 Access Grafana at: `http://localhost:3001` (admin/admin)
 

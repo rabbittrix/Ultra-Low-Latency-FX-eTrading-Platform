@@ -10,15 +10,21 @@ use axum::{
     response::Response,
 };
 use prometheus::{Encoder, Gauge, Histogram, IntCounter, Registry, TextEncoder};
-use std::sync::Arc;
 
 pub struct Metrics {
+    #[allow(dead_code)]
     pub orders_submitted: IntCounter,
+    #[allow(dead_code)]
     pub orders_cancelled: IntCounter,
+    #[allow(dead_code)]
     pub orders_rejected: IntCounter,
+    #[allow(dead_code)]
     pub trades_executed: IntCounter,
+    #[allow(dead_code)]
     pub order_matching_duration: Histogram,
+    #[allow(dead_code)]
     pub orderbook_depth: Gauge,
+    #[allow(dead_code)]
     pub active_orders: Gauge,
 }
 
