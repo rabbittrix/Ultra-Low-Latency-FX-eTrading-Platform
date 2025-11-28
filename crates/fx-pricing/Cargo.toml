@@ -1,0 +1,13 @@
+[package]
+name = "fx-pricing"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+fx-utils = { path = "../fx-utils" }
+fx-md = { path = "../fx-md" }
+serde = { workspace = true }
+tracing = { workspace = true }

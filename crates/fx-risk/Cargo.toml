@@ -1,0 +1,12 @@
+[package]
+name = "fx-risk"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+fx-utils = { path = "../fx-utils" }
+dashmap = { workspace = true }
+tracing = { workspace = true }

@@ -1,0 +1,59 @@
+# Rust
+/target/
+**/*.rs.bk
+*.pdb
+Cargo.lock
+
+# Next.js
+frontend/nextjs-trading-ui/.next/
+frontend/nextjs-trading-ui/out/
+frontend/nextjs-trading-ui/node_modules/
+frontend/nextjs-trading-ui/.env*.local
+frontend/nextjs-trading-ui/.vercel
+
+# Python
+ai/python-ml-service/__pycache__/
+ai/python-ml-service/*.pyc
+ai/python-ml-service/.venv/
+ai/python-ml-service/venv/
+ai/python-ml-service/*.egg-info/
+ai/python-ml-service/dist/
+ai/python-ml-service/build/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+*.log
+
+# Project instructions (as requested)
+project_instructions.md
+tasks.md
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Build artifacts
+*.o
+*.so
+*.dylib
+*.dll
+
+# Test coverage
+coverage/
+*.profdata
+
+# Documentation builds
+book/
+site/
+

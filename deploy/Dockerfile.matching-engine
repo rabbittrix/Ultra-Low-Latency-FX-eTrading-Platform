@@ -1,0 +1,25 @@
+FROM rust:1.82-slim as builder
+
+WORKDIR /app
+
+COPY Cargo.toml Cargo.lock ./
+COPY crates ./crates
+COPY services/matching-engine-service ./services/matching-engine-service
+
+RUN cargo build --release --bin matching-engine-service
+
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY --from=builder /app/target/release/matching-engine-service /app/matching-engine-service
+
+EXPOSE 8083 9093
+
+CMD ["./matching-engine-service"]
+

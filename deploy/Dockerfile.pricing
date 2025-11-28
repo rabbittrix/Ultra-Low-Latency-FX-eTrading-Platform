@@ -1,0 +1,25 @@
+FROM rust:1.82-slim as builder
+
+WORKDIR /app
+
+COPY Cargo.toml Cargo.lock ./
+COPY crates ./crates
+COPY services/pricing-service ./services/pricing-service
+
+RUN cargo build --release --bin pricing-service
+
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY --from=builder /app/target/release/pricing-service /app/pricing-service
+
+EXPOSE 8082 9092
+
+CMD ["./pricing-service"]
+

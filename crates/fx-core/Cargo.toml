@@ -1,0 +1,17 @@
+[package]
+name = "fx-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+fx-utils = { path = "../fx-utils" }
+crossbeam = { workspace = true }
+crossbeam-queue = { workspace = true }
+serde = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+criterion = { workspace = true }

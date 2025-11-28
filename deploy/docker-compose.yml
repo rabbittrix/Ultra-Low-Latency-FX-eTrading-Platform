@@ -1,0 +1,196 @@
+version: "3.8"
+
+services:
+  # Rust Services
+  market-data-service:
+    build:
+      context: ../..
+      dockerfile: deploy/Dockerfile.market-data
+    ports:
+      - "8081:8081"
+      - "9091:9091"
+    environment:
+      - RUST_LOG=info
+    networks:
+      - fx-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  pricing-service:
+    build:
+      context: ../..
+      dockerfile: deploy/Dockerfile.pricing
+    ports:
+      - "8082:8082"
+      - "9092:9092"
+    environment:
+      - RUST_LOG=info
+    networks:
+      - fx-network
+    depends_on:
+      - market-data-service
+
+  matching-engine-service:
+    build:
+      context: ../..
+      dockerfile: deploy/Dockerfile.matching-engine
+    ports:
+      - "8083:8083"
+      - "9093:9093"
+    environment:
+      - RUST_LOG=info
+    networks:
+      - fx-network
+
+  risk-service:
+    build:
+      context: ../..
+      dockerfile: deploy/Dockerfile.risk
+    ports:
+      - "8084:8084"
+      - "9094:9094"
+    environment:
+      - RUST_LOG=info
+    networks:
+      - fx-network
+
+  router-service:
+    build:
+      context: ../..
+      dockerfile: deploy/Dockerfile.router
+    ports:
+      - "8085:8085"
+      - "9095:9095"
+    environment:
+      - RUST_LOG=info
+    networks:
+      - fx-network
+
+  gateway-service:
+    build:
+      context: ../..
+      dockerfile: deploy/Dockerfile.gateway
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    environment:
+      - RUST_LOG=info
+    networks:
+      - fx-network
+    depends_on:
+      - market-data-service
+      - pricing-service
+      - matching-engine-service
+      - risk-service
+
+  # Frontend
+  frontend:
+    build:
+      context: ../../frontend/nextjs-trading-ui
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://gateway-service:8080
+    networks:
+      - fx-network
+    depends_on:
+      - gateway-service
+
+  # AI Service
+  python-ml-service:
+    build:
+      context: ../../ai/python-ml-service
+      dockerfile: Dockerfile
+    ports:
+      - "8086:8086"
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - fx-network
+
+  # Observability Stack
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9099:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    networks:
+      - fx-network
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - fx-network
+    depends_on:
+      - prometheus
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - fx-network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - fx-network
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.15.0
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    networks:
+      - fx-network
+    depends_on:
+      - elasticsearch
+
+  fluentd:
+    image: fluent/fluentd:v1.16-debian-1
+    volumes:
+      - ./fluentd/fluent.conf:/fluentd/etc/fluent.conf
+      - fluentd-logs:/var/log/fluentd
+    networks:
+      - fx-network
+    depends_on:
+      - elasticsearch
+
+networks:
+  fx-network:
+    driver: bridge
+
+volumes:
+  prometheus-data:
+  grafana-data:
+  elasticsearch-data:
+  fluentd-logs:

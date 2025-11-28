@@ -1,0 +1,13 @@
+[package]
+name = "fx-md"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+fx-utils = { path = "../fx-utils" }
+tokio = { workspace = true }
+serde = { workspace = true }
+tracing = { workspace = true }

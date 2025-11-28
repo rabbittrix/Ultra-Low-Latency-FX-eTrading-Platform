@@ -1,0 +1,13 @@
+[package]
+name = "fx-router"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+fx-core = { path = "../fx-core" }
+fx-utils = { path = "../fx-utils" }
+tokio = { workspace = true }
+tracing = { workspace = true }

@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package fx.etrading;
+
+// Market data messages
+message Quote {
+    string instrument = 1;
+    uint64 bid_price = 2;
+    uint64 ask_price = 3;
+    uint64 bid_size = 4;
+    uint64 ask_size = 5;
+    int64 timestamp_ns = 6;
+}
+
+message OrderBookUpdate {
+    string instrument = 1;
+    repeated Level bids = 2;
+    repeated Level asks = 3;
+    int64 timestamp_ns = 4;
+}
+
+message Level {
+    uint64 price = 1;
+    uint64 size = 2;
+}
+
+// Order messages
+message Order {
+    string order_id = 1;
+    string instrument = 2;
+    Side side = 3;
+    OrderType order_type = 4;
+    uint64 quantity = 5;
+    uint64 price = 6;  // Optional for market orders
+    int64 timestamp_ns = 7;
+}
+
+enum Side {
+    BUY = 0;
+    SELL = 1;
+}
+
+enum OrderType {
+    MARKET = 0;
+    LIMIT = 1;
+    STOP = 2;
+    IOC = 3;
+    FOK = 4;
+}
+
+message Trade {
+    string trade_id = 1;
+    string order_id = 2;
+    string instrument = 3;
+    Side side = 4;
+    uint64 quantity = 5;
+    uint64 price = 6;
+    int64 timestamp_ns = 7;
+}
+
+// Service definitions
+service MarketDataService {
+    rpc StreamQuotes(StreamQuotesRequest) returns (stream Quote);
+    rpc GetOrderBook(GetOrderBookRequest) returns (OrderBookUpdate);
+}
+
+message StreamQuotesRequest {
+    string instrument = 1;
+}
+
+message GetOrderBookRequest {
+    string instrument = 1;
+}
+
+service MatchingEngineService {
+    rpc SubmitOrder(Order) returns (OrderResponse);
+    rpc CancelOrder(CancelOrderRequest) returns (OrderResponse);
+}
+
+message OrderResponse {
+    bool success = 1;
+    string message = 2;
+    repeated Trade trades = 3;
+}
+
+message CancelOrderRequest {
+    string order_id = 1;
+}
+
