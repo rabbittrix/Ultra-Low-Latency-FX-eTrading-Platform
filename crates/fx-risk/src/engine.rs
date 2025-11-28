@@ -7,10 +7,9 @@ use std::sync::Arc;
 
 /// Current position for an instrument
 #[derive(Debug, Clone)]
-struct Position {
-    #[allow(dead_code)]
-    instrument: String,
-    quantity: i64, // Positive for long, negative for short
+pub struct Position {
+    pub instrument: String,
+    pub quantity: i64, // Positive for long, negative for short
 }
 
 /// Risk engine for pre-trade validation
@@ -95,5 +94,28 @@ impl RiskEngine {
 
     pub fn remove_order(&self, order_id: OrderId) {
         self.open_orders.remove(&order_id);
+    }
+
+    /// Get current position for an instrument
+    pub fn get_position(&self, instrument: &str) -> i64 {
+        self.positions
+            .get(instrument)
+            .map(|p| p.quantity)
+            .unwrap_or(0)
+    }
+
+    /// Get all positions (for exposure calculation)
+    pub fn positions(&self) -> &DashMap<String, Position> {
+        &self.positions
+    }
+
+    /// Get open orders (for exposure calculation)
+    pub fn open_orders(&self) -> &DashMap<OrderId, Quantity> {
+        &self.open_orders
+    }
+
+    /// Get risk limits
+    pub fn limits(&self) -> &Arc<RiskLimits> {
+        &self.limits
     }
 }

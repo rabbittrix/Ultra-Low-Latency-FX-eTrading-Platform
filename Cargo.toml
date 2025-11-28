@@ -81,6 +81,7 @@ parking_lot = "0.12"
 
 # Network optimizations
 socket2 = "0.5"
+reqwest = { version = "0.12", features = ["json"] }
 
 # Testing
 criterion = "0.5"

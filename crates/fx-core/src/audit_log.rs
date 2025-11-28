@@ -9,11 +9,11 @@ use std::sync::Arc;
 /// Audit event types
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum AuditEventType {
-    OrderSubmitted,
-    OrderFilled,
-    OrderPartiallyFilled,
-    OrderCancelled,
-    OrderRejected,
+    Submitted,
+    Filled,
+    PartiallyFilled,
+    Cancelled,
+    Rejected,
 }
 
 /// Audit log entry

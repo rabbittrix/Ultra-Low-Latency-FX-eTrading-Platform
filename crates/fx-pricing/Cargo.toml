@@ -9,5 +9,8 @@ repository.workspace = true
 [dependencies]
 fx-utils = { path = "../fx-utils" }
 fx-md = { path = "../fx-md" }
+fx-risk = { path = "../fx-risk" }
 serde = { workspace = true }
 tracing = { workspace = true }
+reqwest = { workspace = true }
+tokio = { workspace = true }

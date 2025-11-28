@@ -1,20 +1,36 @@
 //! HTTP handlers for the gateway
 
+use crate::api::{GatewayInfo, HealthResponse};
 use axum::response::Json;
-use serde_json::{json, Value};
 
 /// Health check endpoint
-pub async fn health() -> Json<Value> {
-    Json(json!({
-        "status": "healthy",
-        "service": "gateway"
-    }))
+#[utoipa::path(
+    get,
+    path = "/health",
+    tag = "gateway",
+    responses(
+        (status = 200, description = "Service health status", body = HealthResponse)
+    )
+)]
+pub async fn health() -> Json<HealthResponse> {
+    Json(HealthResponse {
+        status: "healthy".to_string(),
+        service: "gateway".to_string(),
+    })
 }
 
 /// Root endpoint
-pub async fn root() -> Json<Value> {
-    Json(json!({
-        "name": "FX eTrading Gateway",
-        "version": "0.1.0"
-    }))
+#[utoipa::path(
+    get,
+    path = "/",
+    tag = "gateway",
+    responses(
+        (status = 200, description = "Gateway information", body = GatewayInfo)
+    )
+)]
+pub async fn root() -> Json<GatewayInfo> {
+    Json(GatewayInfo {
+        name: "FX eTrading Gateway".to_string(),
+        version: "0.1.0".to_string(),
+    })
 }

@@ -65,7 +65,7 @@ impl MatchingEngine {
     pub fn match_order(&mut self, order: Arc<Order>) -> MatchResult {
         // Log order submission
         self.audit_log.add_event(AuditEvent::from_order(
-            AuditEventType::OrderSubmitted,
+            AuditEventType::Submitted,
             &order,
             None,
         ));
@@ -156,7 +156,7 @@ impl MatchingEngine {
                 // Log partial fill
                 if !trades.is_empty() {
                     self.audit_log.add_event(AuditEvent::from_order(
-                        AuditEventType::OrderPartiallyFilled,
+                        AuditEventType::PartiallyFilled,
                         &remaining_order,
                         Some(format!("Filled {} trades", trades.len())),
                     ));
@@ -164,7 +164,7 @@ impl MatchingEngine {
             } else {
                 // Market order not fully filled - reject remaining
                 self.audit_log.add_event(AuditEvent::from_order(
-                    AuditEventType::OrderRejected,
+                    AuditEventType::Rejected,
                     &remaining_order,
                     Some("Market order not fully filled".to_string()),
                 ));
@@ -172,7 +172,7 @@ impl MatchingEngine {
         } else {
             // Order fully filled
             self.audit_log.add_event(AuditEvent::from_order(
-                AuditEventType::OrderFilled,
+                AuditEventType::Filled,
                 &remaining_order,
                 Some(format!("Filled {} trades", trades.len())),
             ));
@@ -190,7 +190,7 @@ impl MatchingEngine {
         // For now, just log the cancellation attempt
         // In a full implementation, we'd need to search and remove from orderbook
         self.audit_log.add_event(AuditEvent {
-            event_type: AuditEventType::OrderCancelled,
+            event_type: AuditEventType::Cancelled,
             order_id,
             instrument: self.orderbook.instrument().to_string(),
             side: Side::Buy,                        // Placeholder

@@ -18,6 +18,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+      start_period: 10s
+    restart: unless-stopped
 
   pricing-service:
     build:
@@ -28,10 +30,21 @@ services:
       - "9092:9092"
     environment:
       - RUST_LOG=info
+      - AI_SERVICE_URL=http://python-ml-service:8086
     networks:
       - fx-network
     depends_on:
-      - market-data-service
+      market-data-service:
+        condition: service_healthy
+      python-ml-service:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
 
   matching-engine-service:
     build:
@@ -40,10 +53,18 @@ services:
     ports:
       - "8083:8083"
       - "9093:9093"
+      - "50051:50051" # gRPC port
     environment:
       - RUST_LOG=info
     networks:
       - fx-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
 
   risk-service:
     build:
@@ -56,6 +77,13 @@ services:
       - RUST_LOG=info
     networks:
       - fx-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8084/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
 
   router-service:
     build:
@@ -68,6 +96,13 @@ services:
       - RUST_LOG=info
     networks:
       - fx-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8085/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
 
   gateway-service:
     build:
@@ -78,13 +113,30 @@ services:
       - "9090:9090"
     environment:
       - RUST_LOG=info
+      - MARKET_DATA_URL=http://market-data-service:8081
+      - PRICING_URL=http://pricing-service:8082
+      - MATCHING_ENGINE_URL=http://matching-engine-service:8083
+      - RISK_URL=http://risk-service:8084
     networks:
       - fx-network
     depends_on:
-      - market-data-service
-      - pricing-service
-      - matching-engine-service
-      - risk-service
+      market-data-service:
+        condition: service_healthy
+      pricing-service:
+        condition: service_healthy
+      matching-engine-service:
+        condition: service_healthy
+      risk-service:
+        condition: service_healthy
+      router-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
 
   # Frontend
   frontend:
@@ -95,10 +147,19 @@ services:
       - "3000:3000"
     environment:
       - NEXT_PUBLIC_API_URL=http://gateway-service:8080
+      - NODE_ENV=production
     networks:
       - fx-network
     depends_on:
-      - gateway-service
+      gateway-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
 
   # AI Service
   python-ml-service:
@@ -111,6 +172,13 @@ services:
       - PYTHONUNBUFFERED=1
     networks:
       - fx-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8086/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
 
   # Observability Stack
   prometheus:
@@ -125,6 +193,20 @@ services:
       - "--storage.tsdb.path=/prometheus"
     networks:
       - fx-network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:9090/-/healthy",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
 
   grafana:
     image: grafana/grafana:latest
@@ -132,6 +214,7 @@ services:
       - "3001:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=
     volumes:
       - grafana-data:/var/lib/grafana
       - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
@@ -139,7 +222,23 @@ services:
     networks:
       - fx-network
     depends_on:
-      - prometheus
+      prometheus:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:3000/api/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
 
   jaeger:
     image: jaegertracing/all-in-one:latest
@@ -150,6 +249,21 @@ services:
       - COLLECTOR_OTLP_ENABLED=true
     networks:
       - fx-network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:16686",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
@@ -163,6 +277,14 @@ services:
       - elasticsearch-data:/usr/share/elasticsearch/data
     networks:
       - fx-network
+    healthcheck:
+      test:
+        ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
 
   kibana:
     image: docker.elastic.co/kibana/kibana:8.15.0
@@ -173,7 +295,15 @@ services:
     networks:
       - fx-network
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
 
   fluentd:
     image: fluent/fluentd:v1.16-debian-1
@@ -183,7 +313,9 @@ services:
     networks:
       - fx-network
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
+    restart: unless-stopped
 
 networks:
   fx-network:

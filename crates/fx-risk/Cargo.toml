@@ -10,3 +10,4 @@ repository.workspace = true
 fx-utils = { path = "../fx-utils" }
 dashmap = { workspace = true }
 tracing = { workspace = true }
+serde = { workspace = true }
