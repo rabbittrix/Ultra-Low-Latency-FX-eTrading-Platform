@@ -12,9 +12,10 @@ pub struct OrderRouter {
 
 impl OrderRouter {
     pub fn new() -> Self {
-        let mut venues: Vec<Arc<dyn Venue>> = Vec::new();
-        venues.push(Arc::new(MockVenue::new("MockVenue1".to_string())));
-        venues.push(Arc::new(MockVenue::new("MockVenue2".to_string())));
+        let venues: Vec<Arc<dyn Venue>> = vec![
+            Arc::new(MockVenue::new("MockVenue1".to_string())),
+            Arc::new(MockVenue::new("MockVenue2".to_string())),
+        ];
 
         Self { venues }
     }
