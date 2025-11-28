@@ -160,6 +160,10 @@ services:
     restart: unless-stopped
 
   # AI Service
+  # Note: May experience SSL network issues during Docker build in some environments
+  # This is a known issue with PyPI SSL connections in some Docker/network configurations
+  # Workarounds: See ai/python-ml-service/BUILD_TROUBLESHOOTING.md
+  # The platform is fully functional without the AI service
   python-ml-service:
     build:
       context: ../ai/python-ml-service
