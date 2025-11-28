@@ -10,6 +10,7 @@ frontend/nextjs-trading-ui/out/
 frontend/nextjs-trading-ui/node_modules/
 frontend/nextjs-trading-ui/.env*.local
 frontend/nextjs-trading-ui/.vercel
+# Note: package-lock.json should be committed for deterministic builds
 
 # Python
 ai/python-ml-service/__pycache__/
