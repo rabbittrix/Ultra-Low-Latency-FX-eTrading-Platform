@@ -11,7 +11,7 @@ name = "router-service"
 path = "src/main.rs"
 
 [dependencies]
-fx-router = { version = "0.1.0" }
+fx-router = { path = "../../crates/fx-router" }
 fx-utils = { version = "0.1.0" }
 axum = { workspace = true }
 tokio = { workspace = true }

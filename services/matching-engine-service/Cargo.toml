@@ -12,7 +12,7 @@ path = "src/main.rs"
 
 [dependencies]
 fx-core = { version = "0.1.0" }
-fx-proto = { version = "0.1.0" }
+fx-proto = { path = "../../crates/fx-proto" }
 fx-utils = { version = "0.1.0" }
 axum = { workspace = true }
 tokio = { workspace = true }

@@ -11,7 +11,7 @@ name = "gateway-service"
 path = "src/main.rs"
 
 [dependencies]
-fx-gateway = { version = "0.1.0" }
+fx-gateway = { path = "../../crates/fx-gateway" }
 fx-utils = { version = "0.1.0" }
 axum = { workspace = true }
 tower = { workspace = true }
