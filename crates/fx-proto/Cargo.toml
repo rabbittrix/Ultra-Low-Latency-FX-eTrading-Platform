@@ -6,6 +6,9 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 build = "build.rs"
+description = "gRPC protocol definitions for FX eTrading platform inter-service communication"
+keywords = ["trading", "fx", "forex", "grpc", "protobuf", "protocol"]
+categories = ["network-programming", "development-tools"]
 
 [dependencies]
 prost = { workspace = true }

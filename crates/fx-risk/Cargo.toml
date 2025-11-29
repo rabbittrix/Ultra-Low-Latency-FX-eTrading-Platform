@@ -5,6 +5,9 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
+description = "Risk management engine with position limits and exposure calculation"
+keywords = ["trading", "fx", "forex", "risk-management", "exposure"]
+categories = ["development-tools", "algorithms"]
 
 [dependencies]
 fx-utils = { path = "../fx-utils" }

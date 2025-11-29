@@ -39,6 +39,10 @@ Thumbs.db
 project_instructions.md
 tasks.md
 
+# Publishing scripts (generated, not tracked)
+scripts/*.ps1
+scripts/*.sh
+
 # Environment files
 .env
 .env.local

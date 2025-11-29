@@ -11,9 +11,9 @@ name = "matching-engine-service"
 path = "src/main.rs"
 
 [dependencies]
-fx-core = { path = "../../crates/fx-core" }
-fx-proto = { path = "../../crates/fx-proto" }
-fx-utils = { path = "../../crates/fx-utils" }
+fx-core = { version = "0.1.0" }
+fx-proto = { version = "0.1.0" }
+fx-utils = { version = "0.1.0" }
 axum = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }

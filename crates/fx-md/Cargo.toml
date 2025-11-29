@@ -5,6 +5,9 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
+description = "Market data feed processing and normalization for FX trading"
+keywords = ["trading", "fx", "forex", "market-data", "feed"]
+categories = ["development-tools", "network-programming"]
 
 [dependencies]
 fx-utils = { path = "../fx-utils" }

@@ -5,6 +5,9 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
+description = "API gateway utilities with OpenAPI/Swagger support for FX trading platform"
+keywords = ["trading", "fx", "forex", "api-gateway", "openapi", "swagger"]
+categories = ["web-programming", "development-tools"]
 
 [dependencies]
 fx-utils = { path = "../fx-utils" }

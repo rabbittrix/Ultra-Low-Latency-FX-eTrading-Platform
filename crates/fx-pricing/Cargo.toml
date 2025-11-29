@@ -5,6 +5,9 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
+description = "Pricing engine with risk-based adjustments for FX trading"
+keywords = ["trading", "fx", "forex", "pricing", "spread"]
+categories = ["development-tools", "algorithms"]
 
 [dependencies]
 fx-utils = { path = "../fx-utils" }

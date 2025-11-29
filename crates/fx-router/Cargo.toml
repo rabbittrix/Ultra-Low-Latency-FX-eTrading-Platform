@@ -5,6 +5,9 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
+description = "Order routing to external trading venues"
+keywords = ["trading", "fx", "forex", "routing", "venue"]
+categories = ["development-tools", "network-programming"]
 
 [dependencies]
 fx-core = { path = "../fx-core" }

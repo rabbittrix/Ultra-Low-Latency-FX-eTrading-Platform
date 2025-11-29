@@ -5,6 +5,16 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
+description = "Ultra-low-latency matching engine and lock-free order book for FX trading"
+keywords = [
+    "trading",
+    "fx",
+    "forex",
+    "matching-engine",
+    "order-book",
+    "low-latency",
+]
+categories = ["algorithms", "data-structures", "development-tools"]
 
 [dependencies]
 fx-utils = { path = "../fx-utils" }
