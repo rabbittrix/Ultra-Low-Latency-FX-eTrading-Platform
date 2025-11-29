@@ -1,22 +1,24 @@
 [package]
 name = "fx-gateway"
-version.workspace = true
-edition.workspace = true
-authors.workspace = true
-license.workspace = true
-repository.workspace = true
-description = "API gateway utilities with OpenAPI/Swagger support for FX trading platform"
-keywords = ["trading", "fx", "forex", "api-gateway", "openapi", "swagger"]
-categories = ["web-programming", "development-tools"]
+version = "0.1.0"
+edition = "2021"
+authors = ["Roberto de Souza <rabbittrix@hotmail.com>"]
+license = "Apache-2.0"
+repository = "https://github.com/rabbittrix/Ultra-Low-Latency-FX-eTrading-Platform.git"
+description = "API gateway utilities and OpenAPI specification for FX trading platform. Provides unified API interface, request routing, WebSocket aggregation, and OpenAPI/Swagger documentation for all trading services."
+keywords = ["trading", "fx", "forex", "api", "gateway", "openapi"]
+categories = ["web-programming"]
 
 [dependencies]
-fx-utils = { version = "0.1.0" }
+fx-utils = { path = "../fx-utils" }
 axum = { workspace = true }
-tower = { workspace = true }
-tower-http = { workspace = true }
-utoipa = { workspace = true }
-utoipa-swagger-ui = { workspace = true }
 tokio = { workspace = true }
+tracing = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-tracing = { workspace = true }
+utoipa = { workspace = true }
+utoipa-swagger-ui = { workspace = true }
+tokio-tungstenite = { workspace = true }
+futures-util = { workspace = true }
+uuid = { workspace = true }
+reqwest = { workspace = true }

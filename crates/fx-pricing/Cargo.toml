@@ -1,13 +1,13 @@
 [package]
 name = "fx-pricing"
-version.workspace = true
-edition.workspace = true
-authors.workspace = true
-license.workspace = true
-repository.workspace = true
-description = "Pricing engine with risk-based adjustments for FX trading"
+version = "0.1.0"
+edition = "2021"
+authors = ["Roberto de Souza <rabbittrix@hotmail.com>"]
+license = "Apache-2.0"
+repository = "https://github.com/rabbittrix/Ultra-Low-Latency-FX-eTrading-Platform.git"
+description = "Pricing engine with risk-based adjustments for FX trading. Calculates bid/ask spreads, applies risk adjustments based on position exposure, and integrates with AI/ML services for volatility prediction to optimize pricing."
 keywords = ["trading", "fx", "forex", "pricing", "spread"]
-categories = ["development-tools", "algorithms"]
+categories = ["algorithms"]
 
 [dependencies]
 fx-utils = { version = "0.1.0" }

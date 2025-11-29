@@ -1,11 +1,11 @@
 [package]
 name = "fx-md"
-version.workspace = true
-edition.workspace = true
-authors.workspace = true
-license.workspace = true
-repository.workspace = true
-description = "Market data feed processing and normalization for FX trading"
+version = "0.1.0"
+edition = "2021"
+authors = ["Roberto de Souza <rabbittrix@hotmail.com>"]
+license = "Apache-2.0"
+repository = "https://github.com/rabbittrix/Ultra-Low-Latency-FX-eTrading-Platform.git"
+description = "Market data feed processing and normalization for FX trading. Handles real-time quote ingestion, price normalization, and distribution of market data to trading components via broadcast channels."
 keywords = ["trading", "fx", "forex", "market-data", "feed"]
 categories = ["development-tools", "network-programming"]
 

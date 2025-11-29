@@ -41,6 +41,7 @@ tower-http = { version = "0.6", features = [
 
 # gRPC
 tonic = { version = "0.11", features = ["tls", "tls-roots"] }
+tonic-build = "0.11"
 prost = "0.12"
 prost-types = "0.12"
 
@@ -82,6 +83,7 @@ parking_lot = "0.12"
 # Network optimizations
 socket2 = "0.5"
 reqwest = { version = "0.12", features = ["json"] }
+tokio-tungstenite = "0.24"
 
 # Testing
 criterion = "0.5"

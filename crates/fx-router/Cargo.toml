@@ -1,16 +1,16 @@
 [package]
 name = "fx-router"
-version.workspace = true
-edition.workspace = true
-authors.workspace = true
-license.workspace = true
-repository.workspace = true
-description = "Order routing to external trading venues"
+version = "0.1.0"
+edition = "2021"
+authors = ["Roberto de Souza <rabbittrix@hotmail.com>"]
+license = "Apache-2.0"
+repository = "https://github.com/rabbittrix/Ultra-Low-Latency-FX-eTrading-Platform.git"
+description = "Order routing to external trading venues for FX trading. Intelligently routes orders to multiple external trading venues, manages venue connections, and handles order execution across different liquidity providers."
 keywords = ["trading", "fx", "forex", "routing", "venue"]
 categories = ["development-tools", "network-programming"]
 
 [dependencies]
-fx-core = { version = "0.1.0" }
-fx-utils = { version = "0.1.0" }
+fx-core = { path = "../fx-core" }
+fx-utils = { path = "../fx-utils" }
 tokio = { workspace = true }
 tracing = { workspace = true }

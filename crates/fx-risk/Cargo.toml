@@ -1,16 +1,17 @@
 [package]
 name = "fx-risk"
-version.workspace = true
-edition.workspace = true
-authors.workspace = true
-license.workspace = true
-repository.workspace = true
-description = "Risk management engine with position limits and exposure calculation"
+version = "0.1.0"
+edition = "2021"
+authors = ["Roberto de Souza <rabbittrix@hotmail.com>"]
+license = "Apache-2.0"
+repository = "https://github.com/rabbittrix/Ultra-Low-Latency-FX-eTrading-Platform.git"
+description = "Risk management engine for FX trading. Enforces position limits, calculates exposure, and performs pre-trade risk checks to ensure trading activities remain within acceptable risk parameters."
 keywords = ["trading", "fx", "forex", "risk-management", "exposure"]
-categories = ["development-tools", "algorithms"]
+categories = ["algorithms"]
 
 [dependencies]
 fx-utils = { version = "0.1.0" }
-dashmap = { workspace = true }
-tracing = { workspace = true }
+parking_lot = { workspace = true }
+tokio = { workspace = true }
 serde = { workspace = true }
+tracing = { workspace = true }

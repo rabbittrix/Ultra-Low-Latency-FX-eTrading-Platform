@@ -1,19 +1,22 @@
 [package]
 name = "fx-proto"
-version.workspace = true
-edition.workspace = true
-authors.workspace = true
-license.workspace = true
-repository.workspace = true
-build = "build.rs"
-description = "gRPC protocol definitions for FX eTrading platform inter-service communication"
+version = "0.1.0"
+edition = "2021"
+authors = ["Roberto de Souza <rabbittrix@hotmail.com>"]
+license = "Apache-2.0"
+repository = "https://github.com/rabbittrix/Ultra-Low-Latency-FX-eTrading-Platform.git"
+description = "gRPC protocol definitions for FX trading platform. Defines service interfaces, message types, and RPC methods for inter-service communication using Protocol Buffers and gRPC."
 keywords = ["trading", "fx", "forex", "grpc", "protobuf", "protocol"]
-categories = ["network-programming", "development-tools"]
-
-[dependencies]
-prost = { workspace = true }
-prost-types = { workspace = true }
-tonic = { workspace = true }
+categories = ["network-programming"]
+build = "build.rs"
 
 [build-dependencies]
-tonic-build = "0.11"
+tonic-build = { workspace = true }
+prost = { workspace = true }
+prost-types = { workspace = true }
+
+[dependencies]
+fx-utils = { path = "../fx-utils" }
+tonic = { workspace = true }
+prost = { workspace = true }
+prost-types = { workspace = true }

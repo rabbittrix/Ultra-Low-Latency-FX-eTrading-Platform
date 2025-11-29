@@ -1,11 +1,11 @@
 [package]
 name = "fx-utils"
-version.workspace = true
-edition.workspace = true
-authors.workspace = true
-license.workspace = true
-repository.workspace = true
-description = "Shared utilities, error types, and common data structures for FX trading platform"
+version = "0.1.0"
+edition = "2021"
+authors = ["Roberto de Souza <rabbittrix@hotmail.com>"]
+license = "Apache-2.0"
+repository = "https://github.com/rabbittrix/Ultra-Low-Latency-FX-eTrading-Platform.git"
+description = "Shared utilities, error types, and common data structures for FX trading platform. Provides foundational types, error handling, and helper functions used across all trading services."
 keywords = ["trading", "fx", "forex", "utilities", "types"]
 categories = ["development-tools"]
 
