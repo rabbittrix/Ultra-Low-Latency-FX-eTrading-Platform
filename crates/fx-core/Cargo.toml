@@ -17,7 +17,7 @@ keywords = [
 categories = ["algorithms", "data-structures", "development-tools"]
 
 [dependencies]
-fx-utils = { path = "../fx-utils" }
+fx-utils = { version = "0.1.0" }
 crossbeam = { workspace = true }
 crossbeam-queue = { workspace = true }
 serde = { workspace = true }

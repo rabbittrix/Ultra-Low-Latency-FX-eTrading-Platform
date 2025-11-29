@@ -10,7 +10,7 @@ keywords = ["trading", "fx", "forex", "routing", "venue"]
 categories = ["development-tools", "network-programming"]
 
 [dependencies]
-fx-core = { path = "../fx-core" }
-fx-utils = { path = "../fx-utils" }
+fx-core = { version = "0.1.0" }
+fx-utils = { version = "0.1.0" }
 tokio = { workspace = true }
 tracing = { workspace = true }

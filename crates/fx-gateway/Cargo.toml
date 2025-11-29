@@ -10,7 +10,7 @@ keywords = ["trading", "fx", "forex", "api-gateway", "openapi", "swagger"]
 categories = ["web-programming", "development-tools"]
 
 [dependencies]
-fx-utils = { path = "../fx-utils" }
+fx-utils = { version = "0.1.0" }
 axum = { workspace = true }
 tower = { workspace = true }
 tower-http = { workspace = true }

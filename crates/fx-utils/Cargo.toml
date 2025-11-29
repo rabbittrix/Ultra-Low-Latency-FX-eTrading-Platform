@@ -7,7 +7,7 @@ license.workspace = true
 repository.workspace = true
 description = "Shared utilities, error types, and common data structures for FX trading platform"
 keywords = ["trading", "fx", "forex", "utilities", "types"]
-categories = ["development-tools", "development-tools"]
+categories = ["development-tools"]
 
 [dependencies]
 serde = { workspace = true }

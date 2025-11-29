@@ -10,9 +10,9 @@ keywords = ["trading", "fx", "forex", "pricing", "spread"]
 categories = ["development-tools", "algorithms"]
 
 [dependencies]
-fx-utils = { path = "../fx-utils" }
-fx-md = { path = "../fx-md" }
-fx-risk = { path = "../fx-risk" }
+fx-utils = { version = "0.1.0" }
+fx-md = { version = "0.1.0" }
+fx-risk = { version = "0.1.0" }
 serde = { workspace = true }
 tracing = { workspace = true }
 reqwest = { workspace = true }
