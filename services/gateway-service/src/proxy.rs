@@ -12,10 +12,7 @@ use tracing::{error, info};
 /// Get backend service URL from environment variable
 fn get_backend_url(service_name: &str, default_port: u16) -> String {
     let env_var = format!("{}_URL", service_name.to_uppercase().replace("-", "_"));
-    env::var(&env_var).unwrap_or_else(|_| {
-        let service_host = service_name.replace("-", "-");
-        format!("http://{}:{}", service_host, default_port)
-    })
+    env::var(&env_var).unwrap_or_else(|_| format!("http://{}:{}", service_name, default_port))
 }
 
 /// Proxy request to matching engine service
@@ -50,6 +47,9 @@ pub async fn proxy_pricing(Path(path): Path<String>, request: Request) -> Respon
 async fn proxy_request(base_url: &str, path: &str, request: Request) -> Response {
     let method = request.method().clone();
 
+    // Extract headers before consuming request
+    let headers = request.headers().clone();
+
     // Build target URL
     let target_url = if path.is_empty() {
         base_url.to_string()
@@ -77,15 +77,33 @@ async fn proxy_request(base_url: &str, path: &str, request: Request) -> Response
     let client = reqwest::Client::new();
     let mut req_builder = client.request(method, &target_url);
 
-    // Copy headers (excluding host and connection)
-    // Note: In a real implementation, you'd want to filter headers more carefully
+    // Copy relevant headers from original request
+    for (key, value) in headers.iter() {
+        let key_str = key.as_str();
+        // Skip headers that shouldn't be forwarded
+        if key_str != "host"
+            && key_str != "connection"
+            && key_str != "transfer-encoding"
+            && key_str != "content-length"
+        {
+            if let Ok(header_value) = value.to_str() {
+                req_builder = req_builder.header(key, header_value);
+            }
+        }
+    }
+
+    // Set Content-Type if not already set and body is not empty
+    if !body.is_empty() && !headers.contains_key("content-type") {
+        req_builder = req_builder.header("Content-Type", "application/json");
+    }
+
     req_builder = req_builder.body(body.to_vec());
 
     // Execute request
     match req_builder.send().await {
         Ok(response) => {
             let status = response.status();
-            let headers = response.headers().clone();
+            let response_headers = response.headers().clone();
             let body_bytes = match response.bytes().await {
                 Ok(bytes) => bytes,
                 Err(e) => {
@@ -100,7 +118,7 @@ async fn proxy_request(base_url: &str, path: &str, request: Request) -> Response
             let mut response_builder = Response::builder().status(status);
 
             // Copy response headers (excluding connection, transfer-encoding)
-            for (key, value) in headers.iter() {
+            for (key, value) in response_headers.iter() {
                 if key.as_str() != "connection" && key.as_str() != "transfer-encoding" {
                     response_builder = response_builder.header(key, value);
                 }
