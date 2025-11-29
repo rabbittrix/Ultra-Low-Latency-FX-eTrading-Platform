@@ -4,6 +4,7 @@
 //! Provides REST endpoints, WebSocket streams, and Swagger/OpenAPI documentation.
 
 mod metrics;
+mod proxy;
 mod websocket;
 
 use axum::{
@@ -47,6 +48,28 @@ async fn main() -> Result<()> {
         .route("/health", get(handlers::health))
         .route("/metrics", get(metrics::metrics_handler))
         .route("/ws", get(websocket_handler))
+        // Proxy routes for backend services
+        .route(
+            "/matching/*path",
+            get(proxy::proxy_matching)
+                .post(proxy::proxy_matching)
+                .put(proxy::proxy_matching)
+                .delete(proxy::proxy_matching),
+        )
+        .route(
+            "/risk/*path",
+            get(proxy::proxy_risk)
+                .post(proxy::proxy_risk)
+                .put(proxy::proxy_risk)
+                .delete(proxy::proxy_risk),
+        )
+        .route("/market-data/*path", get(proxy::proxy_market_data))
+        .route(
+            "/pricing/*path",
+            get(proxy::proxy_pricing)
+                .post(proxy::proxy_pricing)
+                .put(proxy::proxy_pricing),
+        )
         .merge(SwaggerUi::new("/docs").url("/api-docs/openapi.json", openapi))
         .layer(CorsLayer::permissive())
         .with_state(ws_state);

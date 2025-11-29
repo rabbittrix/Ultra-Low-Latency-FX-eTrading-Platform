@@ -159,11 +159,11 @@ services:
       start_period: 40s
     restart: unless-stopped
 
-  # AI Service
-  # Note: May experience SSL network issues during Docker build in some environments
-  # This is a known issue with PyPI SSL connections in some Docker/network configurations
-  # Workarounds: See ai/python-ml-service/BUILD_TROUBLESHOOTING.md
-  # The platform is fully functional without the AI service
+  # AI Service (Optional - may fail to build due to SSL network issues)
+  # This service is optional - the platform is fully functional without it
+  # To enable: docker-compose --profile ai up -d
+  # Or build manually: cd ../ai/python-ml-service && docker build -t python-ml-service .
+  # See ai/python-ml-service/BUILD_TROUBLESHOOTING.md for solutions
   python-ml-service:
     build:
       context: ../ai/python-ml-service
@@ -181,6 +181,8 @@ services:
       retries: 3
       start_period: 10s
     restart: unless-stopped
+    profiles:
+      - ai # Use profile to enable only when needed
 
   # Observability Stack
   prometheus:
