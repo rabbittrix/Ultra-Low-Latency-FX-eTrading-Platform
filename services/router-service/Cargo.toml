@@ -12,7 +12,7 @@ path = "src/main.rs"
 
 [dependencies]
 fx-router = { path = "../../crates/fx-router" }
-fx-utils = { version = "0.1.0" }
+fx-utils = { path = "../../crates/fx-utils" }
 axum = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
