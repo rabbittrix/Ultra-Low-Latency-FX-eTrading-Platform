@@ -199,7 +199,7 @@ This will start all services including the observability stack. Access:
 - **Frontend**: <http://localhost:3000>
 - **Gateway API**: <http://localhost:8080>
 - **Swagger UI**: <http://localhost:8080/docs>
-- **Grafana**: <http://localhost:3001 (admin/admin)>
+- **Grafana**: <http://localhost:3001> (admin/admin)
 - **Prometheus**: <http://localhost:9099>
 - **Jaeger**: <http://localhost:16686>
 - **Kibana**: <http://localhost:5601>
