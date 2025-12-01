@@ -1,3 +1,11 @@
+[package]
+name = "ultra-low-latency-fx-e-trading-platform"
+version = "0.1.0"
+edition = "2021"
+authors = ["Roberto de Souza <rabbittrix@hotmail.com>"]
+license = "Apache-2.0"
+repository = "https://github.com/rabbittrix/Ultra-Low-Latency-FX-eTrading-Platform"
+
 [workspace]
 members = [
     "crates/fx-core",
