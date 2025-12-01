@@ -10,7 +10,7 @@ keywords = ["trading", "fx", "forex", "api", "gateway"]
 categories = ["web-programming"]
 
 [dependencies]
-fx-utils = { version = "0.1.0" }
+fx-utils = { path = "../fx-utils" }
 axum = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }

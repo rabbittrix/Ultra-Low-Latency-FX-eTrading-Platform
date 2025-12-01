@@ -19,6 +19,8 @@ use std::sync::Arc;
 use tokio::sync::{broadcast, RwLock};
 use tracing::{info, Level};
 
+mod yahoo_feed;
+
 /// Application state shared across handlers
 #[derive(Clone)]
 struct AppState {
@@ -118,12 +120,33 @@ async fn main() -> Result<()> {
         }
     });
 
-    // Start mock feed generator
-    let feed_clone = feed.clone();
-    let metrics_feed = metrics.clone();
-    tokio::spawn(async move {
-        generate_mock_feed(feed_clone, metrics_feed).await;
-    });
+    // Determine data source from environment variable
+    let use_yahoo_finance = std::env::var("USE_YAHOO_FINANCE")
+        .unwrap_or_else(|_| "false".to_string())
+        .parse::<bool>()
+        .unwrap_or(false);
+
+    let instruments = vec![
+        "EURUSD".to_string(),
+        "GBPUSD".to_string(),
+        "USDJPY".to_string(),
+        "AUDUSD".to_string(),
+    ];
+
+    if use_yahoo_finance {
+        info!("Using Yahoo Finance for real market data");
+        let feed_clone = feed.clone();
+        tokio::spawn(async move {
+            yahoo_feed::generate_yahoo_feed(feed_clone, instruments, 1000).await;
+        });
+    } else {
+        info!("Using mock data feed (set USE_YAHOO_FINANCE=true for real data)");
+        let feed_clone = feed.clone();
+        let metrics_feed = metrics.clone();
+        tokio::spawn(async move {
+            generate_mock_feed(feed_clone, metrics_feed).await;
+        });
+    }
 
     // Setup HTTP server
     let state = AppState {

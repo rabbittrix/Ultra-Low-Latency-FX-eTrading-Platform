@@ -58,6 +58,7 @@ use utoipa::OpenApi;
 - `GET /quote` - Get latest market quote
 - `GET /metrics` - Prometheus metrics endpoint
 - `GET /ws` - WebSocket stream for real-time market data
+- **Yahoo Finance Integration**: Set `USE_YAHOO_FINANCE=true` for real market data (delayed 15-20 min on free tier)
 
 ### Pricing Service (Port 8082)
 - `GET /health` - Service health check

@@ -10,7 +10,7 @@ keywords = ["trading", "fx", "forex", "matching-engine", "order-book"]
 categories = ["algorithms", "data-structures"]
 
 [dependencies]
-fx-utils = { version = "0.1.0" }
+fx-utils = { path = "../fx-utils" }
 crossbeam = { workspace = true }
 crossbeam-queue = { workspace = true }
 serde = { workspace = true }

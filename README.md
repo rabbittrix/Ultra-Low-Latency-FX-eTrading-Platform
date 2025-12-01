@@ -35,6 +35,7 @@ The platform follows a microservices architecture with the following components:
    - Real-time quote streaming over WebSocket (`/ws`)
    - REST endpoint for latest quotes (`/quote`)
    - Mock feed generator for multiple instruments (EURUSD, GBPUSD, USDJPY, AUDUSD)
+   - **Yahoo Finance integration** - Optional real market data feed (set `USE_YAHOO_FINANCE=true`)
    - Prometheus metrics (quotes published, subscribers, latency)
    - Zero-copy messaging internally
    - Port: `8081` (HTTP/WebSocket), `/metrics` (Prometheus)
@@ -76,7 +77,7 @@ The platform follows a microservices architecture with the following components:
 
 - **Trading UI** (`nextjs-trading-ui`)
   - Real-time order book visualization
-  - Live price charts
+  - Live price charts (supports real Yahoo Finance data)
   - Order ticket panel
   - Portfolio and PnL tracking
   - Admin dashboard with observability views
@@ -97,6 +98,47 @@ The platform follows a microservices architecture with the following components:
 - **Jaeger**: Distributed tracing
 - **Elasticsearch + Kibana + Fluentd**: Log aggregation and analysis
 
+## 🚀 Quick Start
+
+### Using Docker Compose (Recommended)
+
+1. **Start all services with mock data:**
+
+   ```bash
+   cd deploy
+   docker-compose up -d
+   ```
+
+2. **Start with real Yahoo Finance data:**
+
+   ```bash
+   cd deploy
+   # Edit docker-compose.yml and set USE_YAHOO_FINANCE=true for market-data-service
+   docker-compose up -d
+   ```
+
+3. **Access the services:**
+   - Frontend: <http://localhost:3000>
+   - Gateway API: <http://localhost:8080>
+   - Swagger UI: <http://localhost:8080/docs>
+   - Grafana: <http://localhost:3001> (admin/admin)
+   - Prometheus: <http://localhost:9099>
+
+### Using Real Market Data
+
+The market data service supports Yahoo Finance integration for real FX quotes:
+
+```bash
+# Set environment variable
+export USE_YAHOO_FINANCE=true
+
+# Or in docker-compose.yml
+environment:
+  - USE_YAHOO_FINANCE=true
+```
+
+**Note:** Yahoo Finance free tier provides delayed data (15-20 minutes). For production, consider paid APIs like Alpha Vantage, FXCM, or OANDA.
+
 ## 📦 Project Structure
 
 ```text
@@ -111,7 +153,7 @@ The platform follows a microservices architecture with the following components:
 │   ├── fx-proto/             # gRPC protocol definitions
 │   └── fx-utils/             # Shared utilities
 ├── services/                  # Service binaries
-│   ├── market-data-service/
+│   ├── market-data-service/  # Market data with Yahoo Finance support
 │   ├── pricing-service/
 │   ├── matching-engine-service/
 │   ├── risk-service/
@@ -133,7 +175,7 @@ The platform follows a microservices architecture with the following components:
     └── Dockerfile.*          # Service-specific Dockerfiles
 ```
 
-## 🚀 Quick Start
+## 🚀 Getting Started
 
 ### Prerequisites
 
@@ -211,6 +253,7 @@ This will start all services including the observability stack. Access:
 Services can be configured via environment variables:
 
 - `RUST_LOG`: Logging level (e.g., `info`, `debug`, `trace`)
+- `USE_YAHOO_FINANCE`: Enable real market data from Yahoo Finance (`true`/`false`, default: `false`)
 - `NEXT_PUBLIC_API_URL`: Frontend API endpoint
 - `PYTHONUNBUFFERED`: Python output buffering
 
