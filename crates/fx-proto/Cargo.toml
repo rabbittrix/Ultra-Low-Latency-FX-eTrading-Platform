@@ -6,7 +6,7 @@ authors = ["Roberto de Souza <rabbittrix@hotmail.com>"]
 license = "Apache-2.0"
 repository = "https://github.com/rabbittrix/Ultra-Low-Latency-FX-eTrading-Platform.git"
 description = "gRPC protocol definitions for FX trading platform. Defines service interfaces, message types, and RPC methods for inter-service communication using Protocol Buffers and gRPC."
-keywords = ["trading", "fx", "forex", "grpc", "protobuf", "protocol"]
+keywords = ["trading", "fx", "forex", "grpc", "protobuf"]
 categories = ["network-programming"]
 build = "build.rs"
 

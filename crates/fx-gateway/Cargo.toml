@@ -6,7 +6,7 @@ authors = ["Roberto de Souza <rabbittrix@hotmail.com>"]
 license = "Apache-2.0"
 repository = "https://github.com/rabbittrix/Ultra-Low-Latency-FX-eTrading-Platform.git"
 description = "API gateway utilities and OpenAPI specification for FX trading platform. Provides unified API interface, request routing, WebSocket aggregation, and OpenAPI/Swagger documentation for all trading services."
-keywords = ["trading", "fx", "forex", "api", "gateway", "openapi"]
+keywords = ["trading", "fx", "forex", "api", "gateway"]
 categories = ["web-programming"]
 
 [dependencies]

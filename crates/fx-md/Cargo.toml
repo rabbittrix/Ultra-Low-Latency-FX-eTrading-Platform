@@ -10,7 +10,7 @@ keywords = ["trading", "fx", "forex", "market-data", "feed"]
 categories = ["development-tools", "network-programming"]
 
 [dependencies]
-fx-utils = { path = "../fx-utils" }
+fx-utils = { version = "0.1.0" }
 tokio = { workspace = true }
 serde = { workspace = true }
 tracing = { workspace = true }

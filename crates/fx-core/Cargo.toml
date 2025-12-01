@@ -6,18 +6,11 @@ authors = ["Roberto de Souza <rabbittrix@hotmail.com>"]
 license = "Apache-2.0"
 repository = "https://github.com/rabbittrix/Ultra-Low-Latency-FX-eTrading-Platform.git"
 description = "Ultra-low-latency matching engine and lock-free order book for FX trading. Implements core order matching algorithms, trade execution logic, and maintains real-time order book state with minimal latency."
-keywords = [
-    "trading",
-    "fx",
-    "forex",
-    "matching-engine",
-    "order-book",
-    "low-latency",
-]
+keywords = ["trading", "fx", "forex", "matching-engine", "order-book"]
 categories = ["algorithms", "data-structures"]
 
 [dependencies]
-fx-utils = { path = "../fx-utils" }
+fx-utils = { version = "0.1.0" }
 crossbeam = { workspace = true }
 crossbeam-queue = { workspace = true }
 serde = { workspace = true }
