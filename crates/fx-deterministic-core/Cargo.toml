@@ -1,0 +1,14 @@
+[package]
+name = "fx-deterministic-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Deterministic hot-path primitives: lock-free queues, ring buffers, TCP tuning, CPU pinning notes."
+
+[dependencies]
+crossbeam-queue = { workspace = true }
+socket2 = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }

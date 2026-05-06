@@ -20,10 +20,19 @@ Currently, the API does not require authentication. For production deployments, 
 
 - **Health Check**: `GET /health`
 - **API Info**: `GET /`
-- **Swagger UI**: `GET /docs`
+- **Swagger UI**: `GET /docs` (includes **liquidity** and **execution** tags for proxied routes)
 - **OpenAPI Spec**: `GET /api-docs/openapi.json`
 - **Metrics**: `GET /metrics`
 - **WebSocket**: `WS /ws`
+- **Liquidity graph (proxied)**: `GET|POST /liquidity/...` → `liquidity-graph-service:8091` (path after prefix forwarded)
+- **Execution engine (proxied)**: `GET|POST /execution/...` → `execution-engine:8092`
+
+Examples (via gateway):
+
+- `GET http://localhost:8080/liquidity/v1/graph/snapshot`
+- `POST http://localhost:8080/execution/v1/execute` with JSON body (see Execution Engine below)
+
+Direct service URLs (local dev): `http://localhost:8091`, `http://localhost:8092`.
 
 #### Market Data Service
 
@@ -56,6 +65,32 @@ Currently, the API does not require authentication. For production deployments, 
 - **Get Exposure Summary**: `GET /exposure`
 - **Get Instrument Exposure**: `GET /exposure/{instrument}`
 - **Metrics**: `GET /metrics`
+
+#### Liquidity Graph Service
+
+Base URL: `http://localhost:8091` (or `/liquidity` on gateway).
+
+- **Health**: `GET /health`
+- **Metrics**: `GET /metrics`
+- **Graph snapshot**: `GET /v1/graph/snapshot`
+- **Recompute mock graph**: `POST /v1/graph/recompute`
+- **Plan**: `POST /v1/plan` — body: `{ "instrument": "EURUSD", "side": "buy", "quantity": 1000000.0 }`
+
+#### Execution Engine
+
+Base URL: `http://localhost:8092` (or `/execution` on gateway).
+
+- **Health**: `GET /health`
+- **Metrics**: `GET /metrics`
+- **Execute (mock pipeline)**: `POST /v1/execute` — body: `{ "instrument": "EURUSD", "side": "buy", "quantity": 1000000.0, "client_id": "c1" }`  
+  Response includes echoed `client_id`, `plan`, `fills`, `ai_notes`, and latencies.
+
+#### AI Execution Service (Python)
+
+Base URL: `http://localhost:8093` (not proxied by gateway; called by `execution-engine`).
+
+- **Health**: `GET /health`
+- **Infer**: `POST /v1/infer` — venue feature vector and instrument context (see `ai/ai-execution-service/main.py`)
 
 ## WebSocket API
 
@@ -187,6 +222,23 @@ curl http://localhost:8080/matching/trades
   ]
 }
 ```
+
+### Execute (liquidity + AI pipeline)
+
+**Request** (via gateway):
+
+```bash
+curl -X POST http://localhost:8080/execution/v1/execute \
+  -H "Content-Type: application/json" \
+  -d '{
+    "instrument": "EURUSD",
+    "side": "buy",
+    "quantity": 1000000,
+    "client_id": "demo-client"
+  }'
+```
+
+**Response** (shape): JSON with `client_id`, `risk_ok`, `plan`, `fills`, `total_latency_us`, `ai_notes`.
 
 ### Check Risk
 

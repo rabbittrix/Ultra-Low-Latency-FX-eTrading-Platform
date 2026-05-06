@@ -9,11 +9,11 @@
 
 import { useEffect, useState } from 'react';
 import { WebSocketClient } from '@/lib/websocket';
+import { getPublicApiBaseUrl } from '@/lib/public-config';
 import OrderForm from '@/components/trading/OrderForm';
 import MarketData from '@/components/trading/MarketData';
 import OrderBook from '@/components/orderbook/OrderBook';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 const DEFAULT_INSTRUMENT = 'EURUSD';
 
 export default function TradingScreen() {
@@ -22,15 +22,16 @@ export default function TradingScreen() {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    const client = new WebSocketClient(API_URL);
-    
-    client.connect()
+    const client = new WebSocketClient(getPublicApiBaseUrl());
+
+    client
+      .connect()
       .then(() => {
         setIsConnected(true);
         setWsClient(client);
       })
-      .catch((error) => {
-        console.error('Failed to connect WebSocket:', error);
+      .catch(() => {
+        setIsConnected(false);
       });
 
     return () => {

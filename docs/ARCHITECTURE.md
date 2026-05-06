@@ -21,14 +21,17 @@ The Ultra-Low-Latency FX eTrading Platform follows a microservices architecture 
 Frontend (Next.js)
     ↓ HTTP/WebSocket
 Gateway Service
-    ↓ HTTP/gRPC
-┌─────────────────────────────────────┐
-│  Market Data  │  Pricing  │  Risk  │
-│  Matching     │  Router   │  AI    │
-└─────────────────────────────────────┘
+    ↓ HTTP/gRPC + reverse proxy
+┌──────────────────────────────────────────────────────────┐
+│  Market Data  │  Pricing  │  Risk  │  Matching │ Router │
+│  Liquidity Graph (8091) │  Execution Engine (8092)        │
+└──────────────────────────────────────────────────────────┘
+         Execution Engine ──HTTP──► AI Execution (Python, 8093)
     ↓
 Observability Stack (Prometheus, Grafana, Jaeger, ELK)
 ```
+
+Gateway paths: `/liquidity/*` → liquidity-graph-service, `/execution/*` → execution-engine (see `services/gateway-service`).
 
 ## Core Services
 
@@ -73,6 +76,34 @@ Observability Stack (Prometheus, Grafana, Jaeger, ELK)
 - **Protocols**: REST, WebSocket
 - **Port**: 8080
 - **Dependencies**: All backend services
+- **Proxied routes**: `/liquidity/*` → liquidity graph (8091), `/execution/*` → execution engine (8092)
+
+### Liquidity Graph Service
+
+- **Purpose**: Global liquidity graph snapshot, recompute, and execution plan (mock graph)
+- **Protocols**: REST
+- **Port**: 8091 (`/metrics` on same port)
+- **Dependencies**: None
+
+### Execution Engine
+
+- **Purpose**: Orchestrates risk stub, AI venue inference, graph planning, and mock multi-venue fills
+- **Protocols**: REST
+- **Port**: 8092 (`/metrics` on same port)
+- **Dependencies**: AI Execution Service (HTTP, default 8093)
+
+### AI Execution Service (Python)
+
+- **Purpose**: Per-venue scores for routing (ONNX or NumPy fallback)
+- **Protocols**: REST
+- **Port**: 8093
+- **Dependencies**: None (optional `model.onnx`)
+
+### Supporting crates
+
+- **fx-liquidity-graph**: Graph and planner used by both liquidity and execution services
+- **fx-ai-execution**: Async HTTP client with `TCP_NODELAY` from Rust to Python
+- **fx-deterministic-core**: Preallocated ring buffer demo on the execution hot path
 
 ## Data Flow
 
@@ -125,7 +156,7 @@ Observability Stack (Prometheus, Grafana, Jaeger, ELK)
 
 ### Frontend
 
-- **Framework**: Next.js 15
+- **Framework**: Next.js 16.x
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
 - **State Management**: React Hooks

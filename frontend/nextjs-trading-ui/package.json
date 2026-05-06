@@ -10,6 +10,9 @@
   },
   "scripts": {
     "dev": "next dev",
+    "dev:stack": "node scripts/dev-stack.mjs",
+    "_rust:gateway": "cargo run --manifest-path ../../Cargo.toml --bin gateway-service",
+    "_rust:matching": "cargo run --manifest-path ../../Cargo.toml --bin matching-engine-service",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -23,8 +26,8 @@
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
     "lucide-react": "^0.424.0",
-    "next": "^15.0.0",
-    "postcss": "^8.4.47",
+    "next": "^16.2.4",
+    "postcss": "^8.5.14",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "recharts": "^2.12.7",
@@ -38,5 +41,10 @@
     "eslint-config-next": "^15.0.0",
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.6"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "^8.5.14"
+    }
   }
 }

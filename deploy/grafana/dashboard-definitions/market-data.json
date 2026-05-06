@@ -1,0 +1,110 @@
+{
+  "overwrite": true,
+  "dashboard": {
+    "uid": "fx-market-data",
+    "title": "Market Data Service - Monitoring",
+    "tags": [
+      "fx-trading",
+      "market-data"
+    ],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "5s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Quotes Published Rate",
+        "type": "graph",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        },
+        "targets": [
+          {
+            "expr": "rate(market_data_quotes_published_total[5m])",
+            "legendFormat": "Quotes/sec",
+            "refId": "A"
+          }
+        ],
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        }
+      },
+      {
+        "id": 2,
+        "title": "Active Subscribers",
+        "type": "graph",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 0
+        },
+        "targets": [
+          {
+            "expr": "market_data_active_subscribers",
+            "legendFormat": "Subscribers",
+            "refId": "A"
+          }
+        ],
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        }
+      },
+      {
+        "id": 3,
+        "title": "WebSocket Connections",
+        "type": "graph",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 8
+        },
+        "targets": [
+          {
+            "expr": "market_data_websocket_connections",
+            "legendFormat": "Connections",
+            "refId": "A"
+          }
+        ],
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        }
+      },
+      {
+        "id": 4,
+        "title": "Quote Processing Latency",
+        "type": "graph",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 8
+        },
+        "targets": [
+          {
+            "expr": "market_data_quote_latency_ns / 1000000",
+            "legendFormat": "Latency (ms)",
+            "refId": "A"
+          }
+        ],
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        }
+      }
+    ],
+    "time": {
+      "from": "now-15m",
+      "to": "now"
+    },
+    "editable": true
+  }
+}

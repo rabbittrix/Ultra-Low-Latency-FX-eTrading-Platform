@@ -16,6 +16,8 @@ Prometheus is configured to scrape metrics from all services:
 - **Risk Service**: `risk-service:9094`
 - **Router Service**: `router-service:9095`
 
+**Optional (local dev, not in default Compose):** `liquidity-graph-service` and `execution-engine` expose `GET /metrics` on HTTP ports `8091` and `8092`. Add scrape jobs to `prometheus.yml` when those services run in Docker.
+
 Access Prometheus UI at: `http://localhost:9099`
 
 ### Grafana
@@ -35,14 +37,17 @@ Grafana is pre-configured with:
 grafana/
 ├── provisioning/
 │   ├── datasources/
-│   │   └── datasource.yaml    # Prometheus datasource config
+│   │   └── datasource.yaml       # Prometheus (uid: prometheus)
 │   └── dashboards/
-│       └── dashboard.yml      # Dashboard provisioning config
-└── dashboards/                 # Dashboard JSON files
+│       └── dashboards.yaml       # File provider → dashboard-definitions
+└── dashboard-definitions/        # Dashboard JSON (overwrite + datasource uid)
     ├── fx-trading-overview.json
     ├── matching-engine.json
     └── ...
 ```
+
+After changing dashboards, recreate Grafana or clear its volume once so provisioning reloads:  
+`docker compose up -d --force-recreate grafana` (or `docker compose down` and remove the `grafana-data` volume if dashboards still missing).
 
 Access Grafana at: `http://localhost:3001` (admin/admin)
 
@@ -136,7 +141,7 @@ This will start:
 
 ## Access Points
 
-- **Frontend**: <http://localhost:3000>
+- **Frontend** (Compose maps host **3002** → container 3000): <http://localhost:3002>
 - **Gateway API**: <http://localhost:8080>
 - **Swagger UI**: <http://localhost:8080/docs>
 - **Grafana**: <http://localhost:3001 (admin/admin)>

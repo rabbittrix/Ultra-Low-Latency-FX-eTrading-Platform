@@ -1,0 +1,13 @@
+[package]
+name = "fx-exchange"
+version = "0.1.0"
+edition = "2021"
+authors = ["Roberto de Souza <rabbittrix@hotmail.com>"]
+license = "Apache-2.0"
+repository = "https://github.com/rabbittrix/Ultra-Low-Latency-FX-eTrading-Platform.git"
+description = "Internal exchange abstractions built on the matching engine core."
+
+[dependencies]
+fx-core = { path = "../fx-core" }
+fx-utils = { path = "../fx-utils" }
+serde = { workspace = true }

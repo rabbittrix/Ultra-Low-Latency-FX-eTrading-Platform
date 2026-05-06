@@ -9,19 +9,20 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  TrendingUp, 
-  BookOpen, 
-  FileText, 
-  Briefcase, 
+import {
+  TrendingUp,
+  BookOpen,
+  FileText,
+  Briefcase,
   Settings,
-  BarChart3
+  BarChart3,
+  Network,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
 const navigation = [
   { name: 'Trading', href: '/', icon: TrendingUp },
+  { name: 'Liquidity engine', href: '/liquidity-engine', icon: Network },
   { name: 'Order Book', href: '/orderbook', icon: BookOpen },
   { name: 'Executions', href: '/executions', icon: FileText },
   { name: 'Portfolio', href: '/portfolio', icon: Briefcase },
@@ -59,7 +60,7 @@ export default function Sidebar() {
       </nav>
       <div className="border-t border-gray-800 p-4">
         <p className="text-xs text-gray-500">
-          © 2024 Roberto de Souza
+          © 2026 Roberto de Souza
         </p>
       </div>
     </div>

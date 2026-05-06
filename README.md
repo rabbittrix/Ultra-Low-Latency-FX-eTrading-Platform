@@ -1,7 +1,7 @@
 # Ultra-Low-Latency FX eTrading Platform
 
 [![Rust](https://img.shields.io/badge/rust-1.82+-orange.svg)](https://www.rust-lang.org/)
-[![Next.js](https://img.shields.io/badge/next.js-15.0-black)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/next.js-16.x-black)](https://nextjs.org/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 **Author:** Roberto de Souza  
@@ -17,8 +17,10 @@ This platform provides a complete FX trading solution with:
 - **Ultra-low-latency matching engine** with lock-free data structures
 - **Real-time market data processing** with normalized feeds
 - **Risk management** with pre-trade validation
-- **AI/ML integration** for volatility prediction
-- **Modern trading UI** with real-time order books and charts
+- **AI/ML integration** for volatility prediction (pricing) and venue scoring (execution)
+- **Global liquidity graph** with path planning across mock venues and internal liquidity
+- **AI-assisted execution pipeline** (Rust orchestrator + optional Python ONNX inference)
+- **Modern trading UI** with real-time order books, charts, and a liquidity-engine dashboard
 - **Complete observability** with Prometheus, Grafana, Jaeger, and ELK stack
 - **Production-ready architecture** designed for horizontal scaling
 
@@ -68,10 +70,34 @@ The platform follows a microservices architecture with the following components:
    - Port: `8085` (HTTP), `9095` (Metrics)
 
 6. **API Gateway** (`gateway-service`)
-   - Aggregates all microservices
+   - Aggregates core microservices
    - REST and WebSocket APIs
    - Swagger/OpenAPI documentation
+   - Reverse proxies: `/liquidity/*` → liquidity graph (8091), `/execution/*` → execution engine (8092)
    - Port: `8080` (HTTP), `9090` (Metrics)
+
+7. **Liquidity Graph Service** (`liquidity-graph-service`)
+
+   - In-memory global liquidity graph (mock data) and Dijkstra-style execution planning
+   - REST: snapshot, recompute, plan
+   - Prometheus metrics on default registry at `/metrics` on the **HTTP** port
+   - Port: `8091` (HTTP + `/metrics`)
+
+8. **Execution Engine** (`execution-engine`)
+
+   - Deterministic-style pipeline: risk stub → AI venue scores → graph plan → parallel mock fills
+   - Uses `fx-deterministic-core` ring buffer for hot-path handoff demo; `fx-ai-execution` HTTP client to Python
+   - Port: `8092` (HTTP + `/metrics`)
+
+### Domain crates (Rust libraries)
+
+Additional workspace crates support front-office style modeling and the liquidity stack:
+
+- `fx-oms`, `fx-ems` — order / execution management types
+- `fx-exchange`, `fx-lp` — venue and liquidity-provider modeling
+- `fx-liquidity-graph` — graph types and planning
+- `fx-ai-execution` — low-latency HTTP client to the AI execution service
+- `fx-deterministic-core` — deterministic ring buffer and TCP helpers
 
 ### Frontend (Next.js)
 
@@ -81,15 +107,21 @@ The platform follows a microservices architecture with the following components:
   - Order ticket panel
   - Portfolio and PnL tracking
   - Admin dashboard with observability views
+  - Liquidity Engine page (graph snapshot, recompute, execute via gateway)
   - Port: `3000`
 
-### AI/ML Service (Python)
+### AI/ML Services (Python)
 
 - **ML Service** (`python-ml-service`)
   - Volatility prediction models
   - REST/gRPC API for Rust integration
   - FastAPI-based
   - Port: `8086`
+
+- **AI Execution Service** (`ai/ai-execution-service`)
+  - Venue-level inference: ONNX when `model.onnx` is present, else NumPy fallback
+  - Train/export helper: `train_export.py` (scikit-learn → ONNX)
+  - Port: `8093` (override with `PORT`)
 
 ### Observability Stack
 
@@ -118,11 +150,13 @@ The platform follows a microservices architecture with the following components:
    ```
 
 3. **Access the services:**
-   - Frontend: <http://localhost:3000>
+   - Frontend (Docker): <http://localhost:3002> — host port set in `deploy/docker-compose.yml` (`FRONTEND_HOST_PORT`, default `3002`) so it does not conflict with a local dev server on 3000
    - Gateway API: <http://localhost:8080>
    - Swagger UI: <http://localhost:8080/docs>
    - Grafana: <http://localhost:3001> (admin/admin)
    - Prometheus: <http://localhost:9099>
+
+**Liquidity / execution stack:** `liquidity-graph-service`, `execution-engine`, and `ai-execution-service` are not yet defined in `deploy/docker-compose.yml`. Run them locally for development (see [Getting Started](#getting-started) below) or add Dockerfiles and services to Compose as needed.
 
 ### Using Real Market Data
 
@@ -145,24 +179,34 @@ environment:
 .
 ├── crates/                    # Publishable Rust libraries
 │   ├── fx-core/              # Matching engine core logic
+│   ├── fx-oms/               # Order management types
+│   ├── fx-ems/               # Execution management types
 │   ├── fx-md/                # Market data processing
+│   ├── fx-exchange/          # Exchange / venue modeling
+│   ├── fx-lp/                # Liquidity provider modeling
 │   ├── fx-pricing/           # Pricing engine
 │   ├── fx-risk/              # Risk management
 │   ├── fx-router/            # Order routing
 │   ├── fx-gateway/           # API gateway utilities
 │   ├── fx-proto/             # gRPC protocol definitions
-│   └── fx-utils/             # Shared utilities
+│   ├── fx-utils/             # Shared utilities
+│   ├── fx-liquidity-graph/   # Global liquidity graph + planning
+│   ├── fx-ai-execution/      # HTTP client for AI execution inference
+│   └── fx-deterministic-core/# Deterministic ring buffer + socket helpers
 ├── services/                  # Service binaries
 │   ├── market-data-service/  # Market data with Yahoo Finance support
 │   ├── pricing-service/
 │   ├── matching-engine-service/
 │   ├── risk-service/
 │   ├── router-service/
-│   └── gateway-service/
+│   ├── gateway-service/
+│   ├── liquidity-graph-service/
+│   └── execution-engine/
 ├── frontend/
-│   └── nextjs-trading-ui/    # Next.js trading interface
+│   └── nextjs-trading-ui/    # Next.js trading interface (+ liquidity-engine page)
 ├── ai/
-│   └── python-ml-service/    # Python ML service
+│   ├── python-ml-service/    # Volatility / pricing ML
+│   └── ai-execution-service/ # Venue scoring for execution engine
 └── deploy/
     ├── docker-compose.yml    # Complete stack orchestration
     ├── prometheus.yml        # Prometheus configuration
@@ -207,6 +251,8 @@ cargo run --bin matching-engine-service
 cargo run --bin risk-service
 cargo run --bin router-service
 cargo run --bin gateway-service
+cargo run --bin liquidity-graph-service
+cargo run --bin execution-engine
 ```
 
 #### 3. Setup Frontend
@@ -229,6 +275,19 @@ pip install -r requirements.txt
 python main.py
 ```
 
+#### 4b. AI Execution Service (for `execution-engine`)
+
+```bash
+cd ai/ai-execution-service
+python -m venv .venv
+# Windows: .venv\Scripts\activate
+source .venv/bin/activate
+pip install -r requirements.txt
+python main.py
+```
+
+Default URL is `http://127.0.0.1:8093`. The Rust execution engine reads `AI_EXECUTION_URL` if set.
+
 #### 5. Run with Docker Compose
 
 ```bash
@@ -238,7 +297,7 @@ docker-compose up -d
 
 This will start all services including the observability stack. Access:
 
-- **Frontend**: <http://localhost:3000>
+- **Frontend** (Compose): <http://localhost:3002>
 - **Gateway API**: <http://localhost:8080>
 - **Swagger UI**: <http://localhost:8080/docs>
 - **Grafana**: <http://localhost:3001> (admin/admin)
@@ -256,19 +315,27 @@ Services can be configured via environment variables:
 - `USE_YAHOO_FINANCE`: Enable real market data from Yahoo Finance (`true`/`false`, default: `false`)
 - `NEXT_PUBLIC_API_URL`: Frontend API endpoint
 - `PYTHONUNBUFFERED`: Python output buffering
+- `AI_EXECUTION_URL`: Base URL for AI execution service (default `http://127.0.0.1:8093`; used by `execution-engine`)
+- `LIQUIDITY_INSTRUMENT`: Instrument string for mock liquidity graph (default `EURUSD`; used by liquidity + execution services)
+- `PORT`: AI execution service listen port (default `8093`)
 
 ### Service Ports
 
-| Service         | HTTP Port | Metrics Port |
-| --------------- | --------- | ------------ |
-| Gateway         | 8080      | 9090         |
-| Market Data     | 8081      | 9091         |
-| Pricing         | 8082      | 9092         |
-| Matching Engine | 8083      | 9093         |
-| Risk            | 8084      | 9094         |
-| Router          | 8085      | 9095         |
-| ML Service      | 8086      | -            |
-| Frontend        | 3000      | -            |
+| Service              | HTTP Port | Metrics Port |
+| -------------------- | --------- | ------------ |
+| Gateway              | 8080      | 9090         |
+| Market Data          | 8081      | 9091         |
+| Pricing              | 8082      | 9092         |
+| Matching Engine      | 8083      | 9093         |
+| Risk                 | 8084      | 9094         |
+| Router               | 8085      | 9095         |
+| ML Service (pricing) | 8086      | -            |
+| Liquidity Graph      | 8091      | (same host)  |
+| Execution Engine     | 8092      | (same host)  |
+| AI Execution         | 8093      | -            |
+| Frontend             | 3000      | -            |
+
+Liquidity graph and execution engine expose Prometheus metrics at `GET /metrics` on their HTTP ports (no separate metrics listener).
 
 ## 📊 Performance Characteristics
 
@@ -327,7 +394,7 @@ cargo doc --open
 
 ### Architecture Documentation
 
-See `flow-fx-et.md` for detailed architecture diagrams and service interactions.
+See `flow-fx-et.md` and `docs/ARCHITECTURE.md` for diagrams and service interactions. REST details for the liquidity and execution APIs are in `docs/API.md`.
 
 ## 🔒 Security
 

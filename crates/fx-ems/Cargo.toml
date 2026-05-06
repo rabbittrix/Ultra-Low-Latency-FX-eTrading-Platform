@@ -1,0 +1,13 @@
+[package]
+name = "fx-ems"
+version = "0.1.0"
+edition = "2021"
+authors = ["Roberto de Souza <rabbittrix@hotmail.com>"]
+license = "Apache-2.0"
+repository = "https://github.com/rabbittrix/Ultra-Low-Latency-FX-eTrading-Platform.git"
+description = "Execution management domain crate for FX eTrading workflows."
+
+[dependencies]
+fx-utils = { path = "../fx-utils" }
+fx-oms = { path = "../fx-oms" }
+serde = { workspace = true }

@@ -1,19 +1,28 @@
 [workspace]
 members = [
     "crates/fx-core",
+    "crates/fx-oms",
+    "crates/fx-ems",
     "crates/fx-md",
+    "crates/fx-exchange",
+    "crates/fx-lp",
     "crates/fx-pricing",
     "crates/fx-risk",
     "crates/fx-router",
     "crates/fx-gateway",
     "crates/fx-proto",
     "crates/fx-utils",
+    "crates/fx-liquidity-graph",
+    "crates/fx-ai-execution",
+    "crates/fx-deterministic-core",
     "services/market-data-service",
     "services/pricing-service",
     "services/matching-engine-service",
     "services/risk-service",
     "services/router-service",
     "services/gateway-service",
+    "services/liquidity-graph-service",
+    "services/execution-engine",
 ]
 resolver = "2"
 

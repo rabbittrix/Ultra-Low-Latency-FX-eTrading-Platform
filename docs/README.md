@@ -72,6 +72,7 @@ cargo doc -p fx-core --open
 - [Project Instructions](../project_instructions.md)
 - [Deployment README](../deploy/README.md)
 - [Python ML Service README](../ai/python-ml-service/README.md)
+- [AI Execution Service README](../ai/ai-execution-service/README.md) — FastAPI inference for `execution-engine`
 - [Build Troubleshooting](../ai/python-ml-service/BUILD_TROUBLESHOOTING.md)
 
 ## 🌐 Online Documentation
@@ -79,8 +80,8 @@ cargo doc -p fx-core --open
 For the latest documentation, visit:
 
 - **GitHub Repository**: <https://github.com/rabbittrix/Ultra-Low-Latency-FX-eTrading-Platform>
-- **Crates.io** (when published):<https://crates.io/crates/fx-core>
->
+- **Crates.io** (when published): <https://crates.io/crates/fx-core>
+
 ## 📧 Support
 
 For questions or issues:

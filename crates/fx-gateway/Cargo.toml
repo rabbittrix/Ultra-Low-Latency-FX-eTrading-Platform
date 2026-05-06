@@ -11,6 +11,7 @@ categories = ["web-programming"]
 
 [dependencies]
 fx-utils = { path = "../fx-utils" }
+fx-liquidity-graph = { path = "../fx-liquidity-graph" }
 axum = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }

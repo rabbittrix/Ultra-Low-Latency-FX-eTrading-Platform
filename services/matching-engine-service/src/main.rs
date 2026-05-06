@@ -59,6 +59,7 @@ async fn main() -> Result<()> {
         .route("/orders/cancel", post(handlers::cancel_order))
         .route("/trades", get(handlers::get_trades))
         .route("/audit", get(handlers::get_audit_events))
+        .route("/audit/", get(handlers::get_audit_events))
         .with_state(engine);
 
     let listener = TcpListener::bind("0.0.0.0:8083")

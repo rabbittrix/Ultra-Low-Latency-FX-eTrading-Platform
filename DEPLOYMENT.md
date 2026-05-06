@@ -72,9 +72,15 @@ curl http://localhost:8084/health
 curl http://localhost:8085/health
 ```
 
+**Liquidity graph, execution engine, and AI execution** (ports `8091`–`8093`) are part of the workspace but are **not** started by the default `docker-compose.yml`. For a full local chain:
+
+1. Start `ai/ai-execution-service` on port `8093` (or set `PORT`).
+2. `cargo run --bin liquidity-graph-service` (8091) and `cargo run --bin execution-engine` (8092), with `AI_EXECUTION_URL` pointing at the Python service if not on localhost.
+3. Use the gateway: `http://localhost:8080/liquidity/...` and `http://localhost:8080/execution/...`.
+
 ### 4. Access Services
 
-- **Frontend**: <http://localhost:3000>
+- **Frontend** (Docker Compose): <http://localhost:3002> (default; override with `FRONTEND_HOST_PORT` in `deploy/.env`)
 - **Gateway API**: <http://localhost:8080>
 - **Swagger UI**: <http://localhost:8080/docs>
 - **Grafana**: <http://localhost:3001> (admin/admin)
@@ -341,7 +347,7 @@ matching-engine-service:
 
 - **URL**: <http://localhost:3001>
 - **Default Credentials**: admin/admin (change in production!)
-- **Dashboards**: Pre-configured in `deploy/grafana/dashboards/`
+- **Dashboards**: File-provisioned from `deploy/grafana/dashboard-definitions/` (see `deploy/grafana/provisioning/dashboards/dashboards.yaml`)
 
 ### Jaeger
 
@@ -426,6 +432,18 @@ docker-compose exec gateway-service curl http://matching-engine-service:8083/hea
 # Check DNS resolution
 docker-compose exec gateway-service nslookup matching-engine-service
 ```
+
+### Frontend shows 404 on `/matching/audit` (or other proxied paths)
+
+The matching engine exposes `GET /audit`; the gateway serves it as `GET http://localhost:8080/matching/audit`.
+
+1. **Confirm the process on port 8080 is this gateway** (not another app): `curl http://localhost:8080/health` should return gateway health JSON. If another program owns 8080, stop it or change the gateway host port in Compose.
+2. **Hit the matching engine directly** (from the host, if port 8083 is published): `curl http://localhost:8083/audit` — expect `{"events":...}`. If that 404s, rebuild and recreate the matching-engine container so it includes the current REST routes:
+   `docker compose build matching-engine-service && docker compose up -d matching-engine-service`
+3. **Through the gateway** (inside Docker network):  
+   `docker compose exec gateway-service curl -s http://localhost:8080/matching/audit`
+
+Environment variables: the gateway accepts both `MATCHING_ENGINE_SERVICE_URL` and the legacy Compose name `MATCHING_ENGINE_URL`.
 
 ### Performance Issues
 

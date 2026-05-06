@@ -7,6 +7,10 @@ use utoipa::OpenApi;
     paths(
         crate::handlers::health,
         crate::handlers::root,
+        crate::openapi_proxy::liquidity_graph_snapshot,
+        crate::openapi_proxy::liquidity_graph_recompute,
+        crate::openapi_proxy::liquidity_plan,
+        crate::openapi_proxy::execution_v1_execute,
     ),
     components(schemas(
         HealthResponse,
@@ -32,6 +36,18 @@ use utoipa::OpenApi;
         InstrumentExposure,
         ExposureSummary,
         RiskLimitsInfo,
+        // Liquidity graph + execution (proxied on gateway 8080)
+        fx_liquidity_graph::LiquidityGraph,
+        fx_liquidity_graph::LiquidityNode,
+        fx_liquidity_graph::LiquidityEdge,
+        fx_liquidity_graph::VenueClass,
+        fx_liquidity_graph::VenueAllocation,
+        fx_liquidity_graph::SliceStrategy,
+        fx_liquidity_graph::ExecutionPlan,
+        crate::proxy_types::LiquidityPlanRequestBody,
+        crate::proxy_types::ExecutionSubmitRequest,
+        crate::proxy_types::ExecutionFillLeg,
+        crate::proxy_types::ExecutionSubmitResponse,
     )),
     tags(
         (name = "gateway", description = "FX eTrading Gateway API"),
@@ -39,6 +55,8 @@ use utoipa::OpenApi;
         (name = "pricing", description = "Pricing Engine endpoints (Port 8082)"),
         (name = "trading", description = "Matching Engine endpoints (Port 8083)"),
         (name = "risk", description = "Risk Management endpoints (Port 8084)"),
+        (name = "liquidity", description = "Global liquidity graph (proxied → port 8091)"),
+        (name = "execution", description = "AI-assisted execution engine (proxied → port 8092)"),
     ),
     info(
         title = "FX eTrading Platform API",
@@ -95,6 +113,14 @@ use utoipa::OpenApi;
 
 ### Router Service (Port 8085)
 - `GET /health` - Service health check
+
+### Liquidity Graph Service (Port 8091, via gateway `/liquidity`)
+- `GET /liquidity/v1/graph/snapshot` - Full graph JSON
+- `POST /liquidity/v1/graph/recompute` - Refresh mock graph
+- `POST /liquidity/v1/plan` - Request execution plan (`instrument`, `side`, `quantity`)
+
+### Execution Engine (Port 8092, via gateway `/execution`)
+- `POST /execution/v1/execute` - Run pipeline (risk stub → AI venue scores → plan → mock fills)
 
 ### Python ML Service (Port 8086)
 - `GET /health` - Service health check
@@ -296,3 +322,4 @@ pub struct ExposureSummary {
     pub instruments: Vec<InstrumentExposure>,
     pub risk_limits: RiskLimitsInfo,
 }
+

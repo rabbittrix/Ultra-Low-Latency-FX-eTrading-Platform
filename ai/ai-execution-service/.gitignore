@@ -1,0 +1,4 @@
+model.onnx
+.venv/
+__pycache__/
+*.pyc

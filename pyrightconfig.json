@@ -1,0 +1,22 @@
+{
+  "typeCheckingMode": "basic",
+  "reportMissingTypeStubs": false,
+  "executionEnvironments": [
+    {
+      "root": "ai/ai-execution-service",
+      "venvPath": "ai/ai-execution-service",
+      "venv": ".venv",
+      "extraPaths": [
+        "ai/ai-execution-service/.venv/Lib/site-packages"
+      ]
+    },
+    {
+      "root": "ai/python-ml-service",
+      "venvPath": "ai/python-ml-service",
+      "venv": "venv",
+      "extraPaths": [
+        "ai/python-ml-service/venv/Lib/site-packages"
+      ]
+    }
+  ]
+}

@@ -136,13 +136,13 @@ services:
       start_period: 15s
     restart: unless-stopped
 
-  # Frontend
+  # Frontend (host 3002 avoids clashing with local `npm run dev` on 3000)
   frontend:
     build:
       context: ../frontend/nextjs-trading-ui
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "${FRONTEND_HOST_PORT:-3002}:3000"
     environment:
       - NEXT_PUBLIC_API_URL=http://gateway-service:8080
       - NODE_ENV=production
@@ -221,7 +221,9 @@ services:
       - GF_INSTALL_PLUGINS=
     volumes:
       - grafana-data:/var/lib/grafana
+      # Provider *.yaml only here; dashboard *.json only in dashboard-definitions (Grafana requirement)
       - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/dashboard-definitions:/etc/grafana/dashboard-definitions
       - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
     networks:
       - fx-network

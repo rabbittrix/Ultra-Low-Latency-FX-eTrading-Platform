@@ -10,8 +10,7 @@
 import { useEffect, useState } from 'react';
 import { WebSocketClient } from '@/lib/websocket';
 import OrderBook from '@/components/orderbook/OrderBook';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+import { getPublicApiBaseUrl } from '@/lib/public-config';
 const DEFAULT_INSTRUMENT = 'EURUSD';
 
 export default function OrderBookPage() {
@@ -20,15 +19,15 @@ export default function OrderBookPage() {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    const client = new WebSocketClient(API_URL);
+    const client = new WebSocketClient(getPublicApiBaseUrl());
     
     client.connect()
       .then(() => {
         setIsConnected(true);
         setWsClient(client);
       })
-      .catch((error) => {
-        console.error('Failed to connect WebSocket:', error);
+      .catch(() => {
+        setIsConnected(false);
       });
 
     return () => {

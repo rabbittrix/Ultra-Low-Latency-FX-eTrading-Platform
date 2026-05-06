@@ -17,10 +17,13 @@ flowchart LR
         ME["Matching Engine (Rust)"]
         RK["Risk Engine (Rust)"]
         OR["Order Router (Rust)"]
+        LG["Liquidity Graph (Rust) :8091"]
+        EX["Execution Engine (Rust) :8092"]
     end
 
     subgraph AI
         PY["Python ML Service (FastAPI/ONNX)"]
+        AIX["AI Execution (FastAPI/ONNX) :8093"]
     end
 
     subgraph Messaging
@@ -47,6 +50,9 @@ flowchart LR
     GW --> PR
     GW --> ME
     GW --> RK
+    GW -->|/liquidity| LG
+    GW -->|/execution| EX
+    EX -->|HTTP infer| AIX
     MD --> MQ
     PR --> MQ
     MQ --> ME
@@ -61,6 +67,8 @@ flowchart LR
     PROM --> ME
     PROM --> RK
     PROM --> GW
+    PROM --> LG
+    PROM --> EX
     GRAF --> PROM
     JAEG --> GW
     JAEG --> MD

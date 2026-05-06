@@ -2,45 +2,99 @@
 
 use axum::{
     body::Body,
-    extract::{Path, Request},
+    extract::{OriginalUri, Request},
     http::StatusCode,
     response::Response,
 };
 use std::env;
 use tracing::{error, info};
 
-/// Get backend service URL from environment variable
+/// Resolve backend base URL: full key `MATCHING_ENGINE_SERVICE_URL`, then legacy Compose
+/// short key `MATCHING_ENGINE_URL` (service name with `-service` trimmed), then default host:port.
 fn get_backend_url(service_name: &str, default_port: u16) -> String {
-    let env_var = format!("{}_URL", service_name.to_uppercase().replace("-", "_"));
-    env::var(&env_var).unwrap_or_else(|_| format!("http://{}:{}", service_name, default_port))
+    let full_key = format!("{}_URL", service_name.to_uppercase().replace("-", "_"));
+    if let Ok(url) = env::var(&full_key) {
+        if !url.is_empty() {
+            return url;
+        }
+    }
+    let short = service_name.trim_end_matches("-service");
+    if short != service_name {
+        let legacy_key = format!("{}_URL", short.to_uppercase().replace("-", "_"));
+        if let Ok(url) = env::var(&legacy_key) {
+            if !url.is_empty() {
+                return url;
+            }
+        }
+    }
+    // Docker Compose sets e.g. MATCHING_ENGINE_URL; bare `cargo run` expects localhost.
+    format!("http://127.0.0.1:{}", default_port)
+}
+
+fn normalize_tail_path(path: &str) -> &str {
+    path.trim_end_matches('/')
+}
+
+/// Tail path for the backend after `Router::nest("/{gw}", …)`.
+///
+/// Always derive from [`OriginalUri`] (client path). `Request::uri()` inside a nested service can
+/// be the stripped remainder only (`/trades`), the full path (`/matching/trades`), or ambiguous;
+/// using the original avoids forwarding `/matching/trades` to the backend as `matching/trades`.
+fn nested_service_remainder<'a>(uri_path: &'a str, gateway_first_segment: &str) -> &'a str {
+    let p = uri_path.trim_start_matches('/');
+    let gw = gateway_first_segment.trim_matches('/');
+    if p.len() > gw.len()
+        && p.starts_with(gw)
+        && p.as_bytes().get(gw.len()) == Some(&b'/')
+    {
+        return normalize_tail_path(&p[gw.len() + 1..]);
+    }
+    if p == gw {
+        return "";
+    }
+    normalize_tail_path(p)
 }
 
 /// Proxy request to matching engine service
-/// Strips "/matching" prefix from path
-pub async fn proxy_matching(Path(path): Path<String>, request: Request) -> Response {
+pub async fn proxy_matching(original_uri: OriginalUri, request: Request) -> Response {
     let base_url = get_backend_url("matching-engine-service", 8083);
-    // Path already has the matching prefix stripped by the route
-    proxy_request(&base_url, &path, request).await
+    let path = nested_service_remainder(original_uri.path(), "matching");
+    proxy_request(&base_url, path, request).await
 }
 
 /// Proxy request to risk service
-/// Strips "/risk" prefix from path
-pub async fn proxy_risk(Path(path): Path<String>, request: Request) -> Response {
+pub async fn proxy_risk(original_uri: OriginalUri, request: Request) -> Response {
     let base_url = get_backend_url("risk-service", 8084);
-    // Path already has the risk prefix stripped by the route
-    proxy_request(&base_url, &path, request).await
+    let path = nested_service_remainder(original_uri.path(), "risk");
+    proxy_request(&base_url, path, request).await
 }
 
 /// Proxy request to market data service
-pub async fn proxy_market_data(Path(path): Path<String>, request: Request) -> Response {
+pub async fn proxy_market_data(original_uri: OriginalUri, request: Request) -> Response {
     let base_url = get_backend_url("market-data-service", 8081);
-    proxy_request(&base_url, &path, request).await
+    let path = nested_service_remainder(original_uri.path(), "market-data");
+    proxy_request(&base_url, path, request).await
 }
 
 /// Proxy request to pricing service
-pub async fn proxy_pricing(Path(path): Path<String>, request: Request) -> Response {
+pub async fn proxy_pricing(original_uri: OriginalUri, request: Request) -> Response {
     let base_url = get_backend_url("pricing-service", 8082);
-    proxy_request(&base_url, &path, request).await
+    let path = nested_service_remainder(original_uri.path(), "pricing");
+    proxy_request(&base_url, path, request).await
+}
+
+/// Global liquidity graph service (8091)
+pub async fn proxy_liquidity(original_uri: OriginalUri, request: Request) -> Response {
+    let base_url = get_backend_url("liquidity-graph-service", 8091);
+    let path = nested_service_remainder(original_uri.path(), "liquidity");
+    proxy_request(&base_url, path, request).await
+}
+
+/// AI-driven execution engine orchestrator (8092)
+pub async fn proxy_execution(original_uri: OriginalUri, request: Request) -> Response {
+    let base_url = get_backend_url("execution-engine", 8092);
+    let path = nested_service_remainder(original_uri.path(), "execution");
+    proxy_request(&base_url, path, request).await
 }
 
 /// Generic proxy function

@@ -5,7 +5,7 @@
  * @license Apache-2.0
  */
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+import { getPublicApiBaseUrl } from '@/lib/public-config';
 
 export interface SubmitOrderRequest {
   instrument: string;
@@ -81,28 +81,36 @@ export interface AuditEvent {
 }
 
 class ApiClient {
-  private baseUrl: string;
-
-  constructor() {
-    this.baseUrl = API_URL;
-  }
-
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`;
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-    });
+    const base = getPublicApiBaseUrl();
+    const url = `${base}${endpoint}`;
+    const method = (options.method ?? 'GET').toUpperCase();
+    const headers = new Headers(options.headers as HeadersInit | undefined);
+    if (method !== 'GET' && method !== 'HEAD' && !headers.has('Content-Type')) {
+      headers.set('Content-Type', 'application/json');
+    }
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        ...options,
+        method,
+        headers,
+      });
+    } catch (e) {
+      const reason = e instanceof Error ? e.message : String(e);
+      throw new Error(
+        `Cannot reach API at ${url} (${reason}). Start the gateway on ${base} — try \`npm run dev:stack\` from frontend/nextjs-trading-ui, or \`docker compose up -d\` in deploy/.`,
+      );
+    }
 
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`API error: ${error}`);
+      const body = (await response.text()).trim() || '(empty body)';
+      throw new Error(
+        `HTTP ${response.status} ${response.statusText} on ${endpoint} — ${body}`,
+      );
     }
 
     return response.json();
@@ -158,4 +166,119 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient();
+
+export type GatewayHealthResult =
+  | { reachable: true; health: Record<string, unknown> }
+  | { reachable: false; message: string };
+
+/** Lightweight check — does not use ApiClient (no JSON Content-Type on GET). */
+export async function fetchGatewayHealth(): Promise<GatewayHealthResult> {
+  const base = getPublicApiBaseUrl();
+  try {
+    const r = await fetch(`${base}/health`);
+    const text = await r.text();
+    if (!r.ok) {
+      return {
+        reachable: false,
+        message: `HTTP ${r.status} ${r.statusText}: ${text.trim() || '(empty body)'}`,
+      };
+    }
+    try {
+      return { reachable: true, health: JSON.parse(text) as Record<string, unknown> };
+    } catch {
+      return { reachable: true, health: { status: text, raw: true } };
+    }
+  } catch (e) {
+    return { reachable: false, message: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+/** --- Global liquidity graph + AI execution (gateway proxies) --- */
+
+export interface LiquidityNode {
+  id: string;
+  class: string;
+  label: string;
+}
+
+export interface LiquidityEdge {
+  from: string;
+  to: string;
+  price: number;
+  available_size: number;
+  latency_us: number;
+  fill_probability: number;
+  toxicity: number;
+}
+
+export interface LiquidityGraphSnapshot {
+  instrument: string;
+  nodes: Record<string, LiquidityNode>;
+  adj: Record<string, LiquidityEdge[]>;
+}
+
+export interface VenueAllocation {
+  venue_id: string;
+  quantity: number;
+  expected_price: number;
+  hop: number;
+}
+
+export interface ExecutionPlan {
+  instrument: string;
+  side: string;
+  total_quantity: number;
+  allocations: VenueAllocation[];
+  slice_strategy: { immediate?: null } | { time_weighted?: { slices: number; interval_ms: number } };
+  expected_slippage_bps: number;
+  primary_path: string[];
+  path_cost: number;
+}
+
+export interface ExecuteResponse {
+  client_id: string;
+  risk_ok: boolean;
+  plan: ExecutionPlan;
+  fills: { venue_id: string; quantity: number; latency_us: number }[];
+  total_latency_us: number;
+  ai_notes: string;
+}
+
+export async function getLiquiditySnapshot(): Promise<LiquidityGraphSnapshot> {
+  const url = `${getPublicApiBaseUrl()}/liquidity/v1/graph/snapshot`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(await response.text());
+  return response.json();
+}
+
+export async function getLiquidityPlan(
+  instrument: string,
+  side: string,
+  quantity: number
+): Promise<ExecutionPlan | null> {
+  const url = `${getPublicApiBaseUrl()}/liquidity/v1/plan`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ instrument, side, quantity }),
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return response.json();
+}
+
+export async function runExecutionPipeline(body: {
+  instrument: string;
+  side: string;
+  quantity: number;
+  client_id: string;
+}): Promise<ExecuteResponse> {
+  const url = `${getPublicApiBaseUrl()}/execution/v1/execute`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return response.json();
+}
 
