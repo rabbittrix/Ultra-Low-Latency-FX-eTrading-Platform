@@ -31,7 +31,11 @@ impl EmsEngine {
             ExecutionDestination::LiquidityProvider
         };
 
-        let parts = if matches!(algo, ExecutionAlgo::Direct) { 1 } else { 4 };
+        let parts = if matches!(algo, ExecutionAlgo::Direct) {
+            1
+        } else {
+            4
+        };
         let slice_plan = build_slice_plan(order, algo, parts);
 
         ExecutionDecision {

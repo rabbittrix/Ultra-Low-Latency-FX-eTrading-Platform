@@ -1,6 +1,6 @@
 [package]
 name = "fx-core"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["Roberto de Souza <rabbittrix@hotmail.com>"]
 license = "Apache-2.0"
@@ -10,7 +10,7 @@ keywords = ["trading", "fx", "forex", "matching-engine", "order-book"]
 categories = ["algorithms", "data-structures"]
 
 [dependencies]
-fx-utils = { path = "../fx-utils" }
+fx-utils = { version = "0.1.2" }
 crossbeam = { workspace = true }
 crossbeam-queue = { workspace = true }
 serde = { workspace = true }

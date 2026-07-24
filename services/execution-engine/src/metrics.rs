@@ -1,9 +1,7 @@
 use axum::body::Body;
 use axum::http::{header, StatusCode};
 use axum::response::Response;
-use prometheus::{
-    default_registry, Encoder, Histogram, HistogramOpts, IntCounter, TextEncoder,
-};
+use prometheus::{default_registry, Encoder, Histogram, HistogramOpts, IntCounter, TextEncoder};
 
 pub struct Metrics {
     pub risk_checks: IntCounter,

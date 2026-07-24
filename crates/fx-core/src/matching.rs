@@ -196,8 +196,11 @@ impl MatchingEngine {
             while li < levels.len() {
                 if let Some(oi) = levels[li].orders.iter().position(|o| o.id == order_id) {
                     let ord = levels[li].orders.remove(oi);
-                    levels[li].total_quantity.0 =
-                        levels[li].orders.iter().map(|o| o.remaining_quantity.0).sum();
+                    levels[li].total_quantity.0 = levels[li]
+                        .orders
+                        .iter()
+                        .map(|o| o.remaining_quantity.0)
+                        .sum();
                     if levels[li].orders.is_empty() {
                         levels.remove(li);
                     }

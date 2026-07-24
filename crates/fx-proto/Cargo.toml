@@ -1,6 +1,6 @@
 [package]
 name = "fx-proto"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["Roberto de Souza <rabbittrix@hotmail.com>"]
 license = "Apache-2.0"
@@ -17,7 +17,7 @@ prost-types = { workspace = true }
 protoc-bin-vendored = "3.2"
 
 [dependencies]
-fx-utils = { path = "../fx-utils" }
+fx-utils = { version = "0.1.2" }
 tonic = { workspace = true }
 prost = { workspace = true }
 prost-types = { workspace = true }

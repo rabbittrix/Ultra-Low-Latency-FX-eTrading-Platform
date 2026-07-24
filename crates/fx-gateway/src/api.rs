@@ -322,4 +322,3 @@ pub struct ExposureSummary {
     pub instruments: Vec<InstrumentExposure>,
     pub risk_limits: RiskLimitsInfo,
 }
-

@@ -1,6 +1,6 @@
 [package]
 name = "fx-gateway"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["Roberto de Souza <rabbittrix@hotmail.com>"]
 license = "Apache-2.0"
@@ -10,8 +10,8 @@ keywords = ["trading", "fx", "forex", "api", "gateway"]
 categories = ["web-programming"]
 
 [dependencies]
-fx-utils = { path = "../fx-utils" }
-fx-liquidity-graph = { path = "../fx-liquidity-graph" }
+fx-utils = { version = "0.1.2" }
+fx-liquidity-graph = { version = "0.1.2" }
 axum = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }

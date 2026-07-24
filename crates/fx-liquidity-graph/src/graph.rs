@@ -36,10 +36,7 @@ impl LiquidityGraph {
     }
 
     pub fn add_edge(&mut self, edge: LiquidityEdge) {
-        self.adj
-            .entry(edge.from.clone())
-            .or_default()
-            .push(edge);
+        self.adj.entry(edge.from.clone()).or_default().push(edge);
     }
 
     pub fn nodes(&self) -> impl Iterator<Item = &LiquidityNode> {

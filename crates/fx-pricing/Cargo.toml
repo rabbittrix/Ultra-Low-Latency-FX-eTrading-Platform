@@ -1,6 +1,6 @@
 [package]
 name = "fx-pricing"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["Roberto de Souza <rabbittrix@hotmail.com>"]
 license = "Apache-2.0"
@@ -10,9 +10,9 @@ keywords = ["trading", "fx", "forex", "pricing", "spread"]
 categories = ["algorithms"]
 
 [dependencies]
-fx-utils = { path = "../fx-utils" }
-fx-md = { path = "../fx-md" }
-fx-risk = { path = "../fx-risk" }
+fx-utils = { version = "0.1.2" }
+fx-md = { version = "0.1.2" }
+fx-risk = { version = "0.1.2" }
 serde = { workspace = true }
 tracing = { workspace = true }
 reqwest = { workspace = true }

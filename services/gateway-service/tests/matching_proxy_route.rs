@@ -1,12 +1,6 @@
 //! Ensures `nest("/matching", /*path)` forwards `/matching/audit` with inner path `/audit`.
 
-use axum::{
-    body::Body,
-    extract::Request,
-    http::StatusCode,
-    routing::get,
-    Router,
-};
+use axum::{body::Body, extract::Request, http::StatusCode, routing::get, Router};
 use tower::util::ServiceExt;
 
 async fn echo_tail(request: Request) -> String {
@@ -19,10 +13,7 @@ async fn echo_tail(request: Request) -> String {
 }
 
 fn matching_router() -> Router {
-    Router::new().nest(
-        "/matching",
-        Router::new().route("/*path", get(echo_tail)),
-    )
+    Router::new().nest("/matching", Router::new().route("/*path", get(echo_tail)))
 }
 
 #[tokio::test]

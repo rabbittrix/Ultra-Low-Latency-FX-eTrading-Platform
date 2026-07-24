@@ -6,6 +6,8 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Global liquidity graph: venues as nodes, executable paths as weighted edges, execution planning."
+keywords = ["trading", "fx", "forex", "liquidity", "graph"]
+categories = ["algorithms", "data-structures"]
 
 [dependencies]
 serde = { workspace = true }

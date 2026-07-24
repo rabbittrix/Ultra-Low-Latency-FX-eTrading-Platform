@@ -1,6 +1,6 @@
 [package]
 name = "fx-md"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["Roberto de Souza <rabbittrix@hotmail.com>"]
 license = "Apache-2.0"
@@ -10,7 +10,7 @@ keywords = ["trading", "fx", "forex", "market-data", "feed"]
 categories = ["development-tools", "network-programming"]
 
 [dependencies]
-fx-utils = { path = "../fx-utils" }
+fx-utils = { version = "0.1.2" }
 tokio = { workspace = true }
 serde = { workspace = true }
 tracing = { workspace = true }

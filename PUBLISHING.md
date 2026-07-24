@@ -29,6 +29,7 @@ The following crates are designed to be published:
 6. **fx-router** - Order routing
 7. **fx-gateway** - API gateway utilities
 8. **fx-proto** - gRPC protocol definitions
+9. **fx-liquidity-graph** - Global liquidity graph and execution planning
 
 ## Pre-Publishing Checklist
 

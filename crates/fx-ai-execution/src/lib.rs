@@ -6,6 +6,4 @@ pub mod client;
 pub mod types;
 
 pub use client::AiExecutionClient;
-pub use types::{
-    ExecutionRecommendation, InferRequest, InferResponse, VenueFeatures, VenueScore,
-};
+pub use types::{ExecutionRecommendation, InferRequest, InferResponse, VenueFeatures, VenueScore};

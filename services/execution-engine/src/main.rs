@@ -5,11 +5,11 @@ mod metrics;
 use axum::extract::State;
 use axum::routing::{get, post};
 use axum::{Json, Router};
+use futures_util::future::join_all;
 use fx_ai_execution::{AiExecutionClient, InferRequest, VenueFeatures};
 use fx_deterministic_core::OrderEventRing;
 use fx_liquidity_graph::{plan_execution, GraphPlanner, LiquidityGraph};
 use fx_utils::Result;
-use futures_util::future::join_all;
 use metrics::Metrics;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -59,7 +59,10 @@ async fn health() -> Json<serde_json::Value> {
     Json(json!({ "status": "healthy", "service": "execution-engine" }))
 }
 
-async fn execute(State(state): State<AppState>, Json(body): Json<ExecuteRequest>) -> Json<ExecuteResponse> {
+async fn execute(
+    State(state): State<AppState>,
+    Json(body): Json<ExecuteRequest>,
+) -> Json<ExecuteResponse> {
     let ExecuteRequest {
         instrument,
         side,
@@ -193,7 +196,10 @@ async fn execute(State(state): State<AppState>, Json(body): Json<ExecuteRequest>
     }
 
     let total_us = t0.elapsed().as_micros() as u64;
-    state.metrics.exec_latency.observe(total_us as f64 / 1_000_000.0);
+    state
+        .metrics
+        .exec_latency
+        .observe(total_us as f64 / 1_000_000.0);
     state.metrics.exec_success.inc();
 
     Json(ExecuteResponse {
@@ -220,7 +226,9 @@ async fn main() -> Result<()> {
     let metrics = Arc::new(Metrics::new().map_err(|e| fx_utils::Error::Prometheus(e.to_string()))?);
 
     let instrument = std::env::var("LIQUIDITY_INSTRUMENT").unwrap_or_else(|_| "EURUSD".into());
-    let graph = Arc::new(RwLock::new(LiquidityGraph::mock_global_liquidity(&instrument)));
+    let graph = Arc::new(RwLock::new(LiquidityGraph::mock_global_liquidity(
+        &instrument,
+    )));
     let planner = Arc::new(GraphPlanner::default());
     let ring = Arc::new(OrderEventRing::new(65_536));
 

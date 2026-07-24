@@ -43,10 +43,7 @@ fn normalize_tail_path(path: &str) -> &str {
 fn nested_service_remainder<'a>(uri_path: &'a str, gateway_first_segment: &str) -> &'a str {
     let p = uri_path.trim_start_matches('/');
     let gw = gateway_first_segment.trim_matches('/');
-    if p.len() > gw.len()
-        && p.starts_with(gw)
-        && p.as_bytes().get(gw.len()) == Some(&b'/')
-    {
+    if p.len() > gw.len() && p.starts_with(gw) && p.as_bytes().get(gw.len()) == Some(&b'/') {
         return normalize_tail_path(&p[gw.len() + 1..]);
     }
     if p == gw {

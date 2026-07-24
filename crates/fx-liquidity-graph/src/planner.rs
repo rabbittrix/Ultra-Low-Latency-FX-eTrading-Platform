@@ -57,7 +57,11 @@ impl GraphPlanner {
 fn index_nodes(graph: &LiquidityGraph) -> (HashMap<String, usize>, Vec<String>) {
     let mut ids: Vec<String> = graph.nodes().map(|n| n.id.clone()).collect();
     ids.sort();
-    let map: HashMap<String, usize> = ids.iter().enumerate().map(|(i, s)| (s.clone(), i)).collect();
+    let map: HashMap<String, usize> = ids
+        .iter()
+        .enumerate()
+        .map(|(i, s)| (s.clone(), i))
+        .collect();
     (map, ids)
 }
 
@@ -77,10 +81,7 @@ pub fn dijkstra_path(
     let mut parent: Vec<Option<usize>> = vec![None; n];
     dist[s] = 0.0;
     let mut heap = BinaryHeap::new();
-    heap.push(State {
-        cost: 0.0,
-        node: s,
-    });
+    heap.push(State { cost: 0.0, node: s });
 
     while let Some(State { cost, node }) = heap.pop() {
         if node == t {
@@ -97,7 +98,10 @@ pub fn dijkstra_path(
             if next < dist[v] {
                 dist[v] = next;
                 parent[v] = Some(node);
-                heap.push(State { cost: next, node: v });
+                heap.push(State {
+                    cost: next,
+                    node: v,
+                });
             }
         }
     }

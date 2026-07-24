@@ -3,5 +3,5 @@
 pub mod ems;
 pub mod strategy;
 
-pub use ems::{ExecutionDecision, ExecutionDestination, EmsEngine};
+pub use ems::{EmsEngine, ExecutionDecision, ExecutionDestination};
 pub use strategy::{ExecutionAlgo, SlicePlan};

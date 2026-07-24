@@ -5,9 +5,7 @@ mod metrics;
 use axum::extract::State;
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use fx_liquidity_graph::{
-    plan_execution, GraphPlanner, LiquidityGraph, ExecutionPlan,
-};
+use fx_liquidity_graph::{plan_execution, ExecutionPlan, GraphPlanner, LiquidityGraph};
 use fx_utils::Result;
 use metrics::Metrics;
 use serde::Deserialize;
@@ -73,7 +71,9 @@ async fn main() -> Result<()> {
     let metrics = Arc::new(Metrics::new().map_err(|e| fx_utils::Error::Prometheus(e.to_string()))?);
 
     let instrument = std::env::var("LIQUIDITY_INSTRUMENT").unwrap_or_else(|_| "EURUSD".into());
-    let graph = Arc::new(RwLock::new(LiquidityGraph::mock_global_liquidity(&instrument)));
+    let graph = Arc::new(RwLock::new(LiquidityGraph::mock_global_liquidity(
+        &instrument,
+    )));
     let planner = Arc::new(GraphPlanner::default());
 
     let state = AppState {

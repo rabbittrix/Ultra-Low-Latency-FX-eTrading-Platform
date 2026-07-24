@@ -8,12 +8,8 @@ mod proxy;
 mod websocket;
 
 use axum::{
-    extract::ws::WebSocketUpgrade,
-    extract::State,
-    http::StatusCode,
-    response::Response,
-    routing::get,
-    Router,
+    extract::ws::WebSocketUpgrade, extract::State, http::StatusCode, response::Response,
+    routing::get, Router,
 };
 use fx_gateway::{handlers, GatewayApi};
 use fx_utils::Result;
@@ -130,7 +126,10 @@ async fn main() -> Result<()> {
         .await
         .map_err(fx_utils::Error::Io)?;
 
-    info!("Gateway Service listening on http://{} (set GATEWAY_HTTP_PORT to override)", addr);
+    info!(
+        "Gateway Service listening on http://{} (set GATEWAY_HTTP_PORT to override)",
+        addr
+    );
     info!("Swagger UI available at http://{}/docs", addr);
     info!("WebSocket endpoint available at ws://{}/ws", addr);
 

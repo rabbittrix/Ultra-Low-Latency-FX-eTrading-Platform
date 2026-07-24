@@ -1,6 +1,6 @@
 [package]
 name = "fx-router"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["Roberto de Souza <rabbittrix@hotmail.com>"]
 license = "Apache-2.0"
@@ -10,7 +10,7 @@ keywords = ["trading", "fx", "forex", "routing", "venue"]
 categories = ["development-tools", "network-programming"]
 
 [dependencies]
-fx-core = { path = "../fx-core" }
-fx-utils = { path = "../fx-utils" }
+fx-core = { version = "0.1.2" }
+fx-utils = { version = "0.1.2" }
 tokio = { workspace = true }
 tracing = { workspace = true }

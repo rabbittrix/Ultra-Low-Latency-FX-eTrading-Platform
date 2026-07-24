@@ -20,19 +20,17 @@ impl OmsEngine {
     }
 
     pub fn mark_routed(&self, order_id: OrderId) -> Result<()> {
-        let mut order = self
-            .orders
-            .get_mut(&order_id)
-            .ok_or_else(|| fx_utils::Error::InvalidInput(format!("Order not found: {}", order_id)))?;
+        let mut order = self.orders.get_mut(&order_id).ok_or_else(|| {
+            fx_utils::Error::InvalidInput(format!("Order not found: {}", order_id))
+        })?;
         order.state = OmsOrderState::Routed;
         Ok(())
     }
 
     pub fn mark_filled(&self, order_id: OrderId) -> Result<()> {
-        let mut order = self
-            .orders
-            .get_mut(&order_id)
-            .ok_or_else(|| fx_utils::Error::InvalidInput(format!("Order not found: {}", order_id)))?;
+        let mut order = self.orders.get_mut(&order_id).ok_or_else(|| {
+            fx_utils::Error::InvalidInput(format!("Order not found: {}", order_id))
+        })?;
         order.state = OmsOrderState::Filled;
         Ok(())
     }
