@@ -2,7 +2,7 @@
 /target/
 **/*.rs.bk
 *.pdb
-Cargo.lock
+# Note: Cargo.lock should be committed for deterministic Docker/CI builds
 
 # Next.js
 frontend/nextjs-trading-ui/.next/

@@ -1,6 +1,6 @@
 # Ultra-Low-Latency FX eTrading Platform
 
-[![Rust](https://img.shields.io/badge/rust-1.82+-orange.svg)](https://www.rust-lang.org/)
+[![Rust](https://img.shields.io/badge/rust-1.91+-orange.svg)](https://www.rust-lang.org/)
 [![Next.js](https://img.shields.io/badge/next.js-16.x-black)](https://nextjs.org/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
@@ -227,7 +227,7 @@ environment:
 
 ### Prerequisites
 
-- **Rust** 1.82+ (stable)
+- **Rust** 1.91+ (stable; Docker images use `rust:1.91-slim-bookworm`)
 - **Node.js** 20+ and npm/yarn
 - **Python** 3.12+
 - **Docker** and Docker Compose

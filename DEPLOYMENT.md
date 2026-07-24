@@ -34,7 +34,7 @@
 
 ### Optional (for local development)
 
-- **Rust**: 1.83+ (for building from source)
+- **Rust**: 1.91+ (for building from source; Docker uses `rust:1.91-slim-bookworm`)
 - **Node.js**: 20+ (for frontend development)
 - **Python**: 3.12+ (for AI service development)
 

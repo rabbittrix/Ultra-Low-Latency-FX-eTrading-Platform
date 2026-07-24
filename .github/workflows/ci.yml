@@ -151,6 +151,7 @@ jobs:
           context: .
           file: ./deploy/Dockerfile.market-data
           push: false
+          load: true
           tags: fx-etrading:market-data-test
           cache-from: type=gha
           cache-to: type=gha,mode=max
