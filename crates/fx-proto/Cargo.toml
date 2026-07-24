@@ -17,7 +17,7 @@ prost-types = { workspace = true }
 protoc-bin-vendored = "3.2"
 
 [dependencies]
-fx-utils = { version = "0.1.2" }
+fx-utils = { path = "../fx-utils" }
 tonic = { workspace = true }
 prost = { workspace = true }
 prost-types = { workspace = true }

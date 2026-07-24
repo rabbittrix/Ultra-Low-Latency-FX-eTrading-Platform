@@ -15,7 +15,7 @@
     "_rust:matching": "cargo run --manifest-path ../../Cargo.toml --bin matching-engine-service",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\""
   },
   "dependencies": {

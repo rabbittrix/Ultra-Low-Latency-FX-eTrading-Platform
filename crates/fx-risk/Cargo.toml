@@ -10,7 +10,7 @@ keywords = ["trading", "fx", "forex", "risk-management", "exposure"]
 categories = ["algorithms"]
 
 [dependencies]
-fx-utils = { version = "0.1.2" }
+fx-utils = { path = "../fx-utils" }
 parking_lot = { workspace = true }
 dashmap = { workspace = true }
 tokio = { workspace = true }

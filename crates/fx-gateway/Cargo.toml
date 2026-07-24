@@ -10,8 +10,8 @@ keywords = ["trading", "fx", "forex", "api", "gateway"]
 categories = ["web-programming"]
 
 [dependencies]
-fx-utils = { version = "0.1.2" }
-fx-liquidity-graph = { version = "0.1.2" }
+fx-utils = { path = "../fx-utils" }
+fx-liquidity-graph = { path = "../fx-liquidity-graph" }
 axum = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
