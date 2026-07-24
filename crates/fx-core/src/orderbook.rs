@@ -36,13 +36,14 @@ impl OrderBook {
         };
 
         if let Some(price) = order.price {
-            // Find or create level
+            // Find or create level. Comparator must be consistent with sort order:
+            // bids descending (highest first), asks ascending (lowest first).
+            // Do not use binary_search_by_key with a complemented key against a raw
+            // price target — that always inserts at index 0 on the bid side.
             let pos = levels
-                .binary_search_by_key(&price.0, |l| {
-                    match order.side {
-                        Side::Buy => u64::MAX - l.price.0, // Reverse for bids
-                        Side::Sell => l.price.0,
-                    }
+                .binary_search_by(|l| match order.side {
+                    Side::Buy => price.0.cmp(&l.price.0),
+                    Side::Sell => l.price.0.cmp(&price.0),
                 })
                 .unwrap_or_else(|e| e);
 

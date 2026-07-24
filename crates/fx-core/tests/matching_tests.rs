@@ -188,3 +188,69 @@ fn test_audit_log_storage() {
     assert!(!events.is_empty());
     assert!(events.iter().any(|e| e.order_id == buy_order.id));
 }
+
+/// Bids must stay descending by price so best_bid / match_order read the true top.
+#[test]
+fn test_bid_levels_sorted_descending_and_marketable_sell_crosses() {
+    let mut engine = MatchingEngine::new("EURUSD".to_string());
+
+    for price in [100_u64, 101, 99] {
+        let bid = Arc::new(Order::new(
+            Uuid::new_v4(),
+            "EURUSD".to_string(),
+            Side::Buy,
+            OrderType::Limit,
+            Quantity(10),
+            Some(Price(price)),
+        ));
+        engine.orderbook_mut().add_order(bid);
+    }
+
+    let best = engine.orderbook().best_bid().expect("best bid");
+    assert_eq!(best.price.0, 101, "best bid must be highest resting price");
+
+    let sell = Arc::new(Order::new(
+        Uuid::new_v4(),
+        "EURUSD".to_string(),
+        Side::Sell,
+        OrderType::Limit,
+        Quantity(5),
+        Some(Price(100)),
+    ));
+    let result = engine.match_order(sell);
+    assert_eq!(result.trades.len(), 1);
+    assert_eq!(result.trades[0].quantity.0, 5);
+    assert_eq!(result.trades[0].price.0, 101);
+    assert!(result.order.is_filled());
+}
+
+#[test]
+fn test_cancel_order_removes_resting_and_unknown_returns_false() {
+    let mut engine = MatchingEngine::new("EURUSD".to_string());
+
+    let bid_id = Uuid::new_v4();
+    let bid = Arc::new(Order::new(
+        bid_id,
+        "EURUSD".to_string(),
+        Side::Buy,
+        OrderType::Limit,
+        Quantity(10),
+        Some(Price(100)),
+    ));
+    engine.orderbook_mut().add_order(bid);
+
+    assert!(engine.cancel_order(bid_id));
+    assert!(!engine.cancel_order(Uuid::new_v4()));
+    assert!(engine.orderbook().best_bid().is_none());
+
+    let sell = Arc::new(Order::new(
+        Uuid::new_v4(),
+        "EURUSD".to_string(),
+        Side::Sell,
+        OrderType::Limit,
+        Quantity(5),
+        Some(Price(100)),
+    ));
+    let result = engine.match_order(sell);
+    assert_eq!(result.trades.len(), 0);
+}

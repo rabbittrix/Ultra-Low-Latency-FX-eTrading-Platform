@@ -184,22 +184,46 @@ impl MatchingEngine {
         }
     }
 
-    /// Cancel an order
+    /// Cancel a resting order. Returns `true` if the order was found and removed.
     pub fn cancel_order(&mut self, order_id: fx_utils::OrderId) -> bool {
-        // TODO: Implement order cancellation from orderbook
-        // For now, just log the cancellation attempt
-        // In a full implementation, we'd need to search and remove from orderbook
-        self.audit_log.add_event(AuditEvent {
-            event_type: AuditEventType::Cancelled,
-            order_id,
-            instrument: self.orderbook.instrument().to_string(),
-            side: Side::Buy,                        // Placeholder
-            order_type: fx_utils::OrderType::Limit, // Placeholder
-            quantity: 0,
-            price: None,
-            timestamp_ns: fx_utils::time::now_nanos(),
-            message: Some("Order cancellation requested".to_string()),
-        });
-        true
+        let mut removed: Option<(Side, Option<Price>, u64)> = None;
+        'outer: for side in [Side::Buy, Side::Sell] {
+            let levels = match side {
+                Side::Buy => self.orderbook.bids_mut(),
+                Side::Sell => self.orderbook.asks_mut(),
+            };
+            let mut li = 0;
+            while li < levels.len() {
+                if let Some(oi) = levels[li].orders.iter().position(|o| o.id == order_id) {
+                    let ord = levels[li].orders.remove(oi);
+                    levels[li].total_quantity.0 =
+                        levels[li].orders.iter().map(|o| o.remaining_quantity.0).sum();
+                    if levels[li].orders.is_empty() {
+                        levels.remove(li);
+                    }
+                    removed = Some((ord.side, ord.price, ord.remaining_quantity.0));
+                    break 'outer;
+                }
+                li += 1;
+            }
+        }
+
+        match removed {
+            Some((side, price, quantity)) => {
+                self.audit_log.add_event(AuditEvent {
+                    event_type: AuditEventType::Cancelled,
+                    order_id,
+                    instrument: self.orderbook.instrument().to_string(),
+                    side,
+                    order_type: fx_utils::OrderType::Limit,
+                    quantity,
+                    price: price.map(|p| p.0),
+                    timestamp_ns: fx_utils::time::now_nanos(),
+                    message: Some("Order cancelled".to_string()),
+                });
+                true
+            }
+            None => false,
+        }
     }
 }
