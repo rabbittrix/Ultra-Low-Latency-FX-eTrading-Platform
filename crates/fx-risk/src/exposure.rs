@@ -85,7 +85,7 @@ impl ExposureCalculator {
         }
 
         // Sort by exposure (highest first)
-        instruments.sort_by(|a, b| b.position_abs.cmp(&a.position_abs));
+        instruments.sort_by_key(|b| std::cmp::Reverse(b.position_abs));
 
         ExposureSummary {
             total_instruments: instruments.len(),

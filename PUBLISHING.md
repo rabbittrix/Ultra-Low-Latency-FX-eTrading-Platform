@@ -15,11 +15,11 @@ This guide explains how to publish the Rust crates from this project to [crates.
 3. **Cargo Login**: Login to crates.io using `cargo login <token>`
 4. **Verify Crate Names**: Check that all crate names are available (see [Crate Naming](#crate-naming) section below)
 
-**⚠️ Important**: This is a **new project** being published for the **first time**. Make sure all crate names are available on crates.io before publishing!
+**⚠️ Important**: Bump package / `[workspace.package]` versions before publishing. The script converts path deps → version deps for upload, waits for crates.io indexing, then **restores path deps** for local development.
 
 ## Publishable Crates
 
-The following crates are designed to be published:
+The following crates are designed to be published (current line: **0.1.2**):
 
 1. **fx-core** - Core matching engine and order book logic
 2. **fx-utils** - Shared utilities and common types
@@ -30,6 +30,8 @@ The following crates are designed to be published:
 7. **fx-gateway** - API gateway utilities
 8. **fx-proto** - gRPC protocol definitions
 9. **fx-liquidity-graph** - Global liquidity graph and execution planning
+
+Each published package includes **`DONATION.md`** (copied from the repo root into the crate directory before release).
 
 ## Pre-Publishing Checklist
 
@@ -289,6 +291,7 @@ Follow [Semantic Versioning](https://semver.org/):
 - `fx-router` - Check: <https://crates.io/crates/fx-router>
 - `fx-gateway` - Check: <https://crates.io/crates/fx-gateway>
 - `fx-proto` - Check: <https://crates.io/crates/fx-proto>
+- `fx-liquidity-graph` - Check: <https://crates.io/crates/fx-liquidity-graph>
 
 ### Check Name Availability
 

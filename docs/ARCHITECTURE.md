@@ -18,10 +18,11 @@ The Ultra-Low-Latency FX eTrading Platform follows a microservices architecture 
 ### Service Communication
 
 ```text
-Frontend (Next.js)
-    ↓ HTTP/WebSocket
-Gateway Service
-    ↓ HTTP/gRPC + reverse proxy
+Frontend (Next.js) ──HTTP/WS──► Gateway (direct; no Next.js WS rewrite)
+                                    │
+                    nest("/matching"|/risk|/market-data|/pricing|/liquidity|/execution")
+                                    │  OriginalUri remainder → backend path
+                                    ▼
 ┌──────────────────────────────────────────────────────────┐
 │  Market Data  │  Pricing  │  Risk  │  Matching │ Router │
 │  Liquidity Graph (8091) │  Execution Engine (8092)        │
@@ -31,7 +32,7 @@ Gateway Service
 Observability Stack (Prometheus, Grafana, Jaeger, ELK)
 ```
 
-Gateway paths: `/liquidity/*` → liquidity-graph-service, `/execution/*` → execution-engine (see `services/gateway-service`).
+Gateway paths (examples): `/matching/trades` → matching `:8083/trades`; `/liquidity/v1/graph/snapshot` → liquidity-graph `:8091/v1/graph/snapshot`; `/execution/*` → execution-engine `:8092`. Backend base URLs default to `127.0.0.1` and can be overridden with env vars (Compose sets service DNS names).
 
 ## Core Services
 
@@ -54,7 +55,9 @@ Gateway paths: `/liquidity/*` → liquidity-graph-service, `/execution/*` → ex
 - **Purpose**: Order matching and trade execution
 - **Protocols**: REST, gRPC
 - **Port**: 8083 (REST), 50051 (gRPC)
-- **Dependencies**: Risk Service
+- **Dependencies**: Risk Service (pre-trade in full flow; service can run standalone)
+- **Book invariants**: Bid levels sorted **highest-first**; ask levels **lowest-first** (`fx-core` `OrderBook::add_order`)
+- **Cancel**: `MatchingEngine::cancel_order` removes the resting order (or returns `false` if not found)
 
 ### Risk Service
 
@@ -74,9 +77,14 @@ Gateway paths: `/liquidity/*` → liquidity-graph-service, `/execution/*` → ex
 
 - **Purpose**: API aggregation and request routing
 - **Protocols**: REST, WebSocket
-- **Port**: 8080
+- **Port**: 8080 (override `GATEWAY_HTTP_PORT`)
 - **Dependencies**: All backend services
-- **Proxied routes**: `/liquidity/*` → liquidity graph (8091), `/execution/*` → execution engine (8092)
+- **Proxied routes**: Nested routers for `/matching`, `/risk`, `/market-data`, `/pricing`, `/liquidity` → `8091`, `/execution` → `8092`; CORS `OPTIONS` → `204`
+- **Frontend**: Browser uses `NEXT_PUBLIC_API_URL` / `ws://…/ws` against the gateway (not a Next.js WS proxy)
+
+### Local UI + core stack
+
+`frontend/nextjs-trading-ui` **`npm run dev:stack`** builds matching, liquidity-graph, execution-engine, and gateway into `target/dev-stack`, health-checks each service, then starts Next.js. See root [README](../README.md#3-frontend--local-rust-stack-recommended-on-windows).
 
 ### Liquidity Graph Service
 
@@ -101,7 +109,8 @@ Gateway paths: `/liquidity/*` → liquidity-graph-service, `/execution/*` → ex
 
 ### Supporting crates
 
-- **fx-liquidity-graph**: Graph and planner used by both liquidity and execution services
+- **fx-core**: Matching engine + order book; re-exports shared `fx_utils` types (`Price`, `Quantity`, `OrderId`) for dependents such as `fx-exchange`
+- **fx-liquidity-graph**: Graph and planner used by both liquidity and execution services (also published on crates.io)
 - **fx-ai-execution**: Async HTTP client with `TCP_NODELAY` from Rust to Python
 - **fx-deterministic-core**: Preallocated ring buffer demo on the execution hot path
 
@@ -160,6 +169,7 @@ Gateway paths: `/liquidity/*` → liquidity-graph-service, `/execution/*` → ex
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
 - **State Management**: React Hooks
+- **Lint**: ESLint CLI (`eslint .`) — `next lint` removed in Next.js 16
 
 ### Observability
 

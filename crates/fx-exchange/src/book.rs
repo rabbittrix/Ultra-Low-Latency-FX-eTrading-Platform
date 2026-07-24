@@ -1,4 +1,4 @@
-use fx_utils::{Price, Quantity};
+use fx_core::{Price, Quantity};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]

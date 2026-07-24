@@ -14,9 +14,10 @@
 
 ### Architecture
 
-- [System Architecture](../flow-fx-et.md)
-- [Service Overview](../README.md#architecture)
+- [System Architecture](../flow-fx-et.md) (diagram + local/gateway notes)
+- [Service Overview](ARCHITECTURE.md)
 - [API Documentation](http://localhost:8080/docs) (Swagger UI)
+- [Donations](../DONATION.md)
 
 ### Development
 

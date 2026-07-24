@@ -9,5 +9,4 @@ description = "Internal exchange abstractions built on the matching engine core.
 
 [dependencies]
 fx-core = { path = "../fx-core" }
-fx-utils = { path = "../fx-utils" }
 serde = { workspace = true }

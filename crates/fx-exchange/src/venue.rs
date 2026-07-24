@@ -1,6 +1,5 @@
 use crate::book::L2Level;
-use fx_core::{MatchingEngine, Order, Trade};
-use fx_utils::OrderId;
+use fx_core::{MatchingEngine, Order, OrderId, Trade};
 use std::sync::Arc;
 
 #[derive(Debug, Clone)]

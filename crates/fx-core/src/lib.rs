@@ -12,5 +12,9 @@ pub mod trade_log;
 pub use audit_log::{AuditEvent, AuditEventType, AuditLog};
 pub use matching::{MatchResult, MatchingEngine, Trade};
 pub use order::Order;
-pub use orderbook::OrderBook;
+pub use orderbook::{Level, OrderBook};
 pub use trade_log::TradeLog;
+
+// Re-export shared types so dependents share fx-core's fx-utils instance
+// (avoids "two versions of fx_utils" type mismatches after crates.io publishes).
+pub use fx_utils::{OrderId, Price, Quantity, Side};

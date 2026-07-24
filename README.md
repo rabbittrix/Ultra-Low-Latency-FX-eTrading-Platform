@@ -51,10 +51,11 @@ The platform follows a microservices architecture with the following components:
 
 3. **Matching Engine** (`matching-engine-service`)
 
-   - Ultra-low-latency order matching
-   - Lock-free order book implementation
+   - Ultra-low-latency order matching (`fx-core`)
+   - Lock-free order book; bids kept **descending** by price, asks ascending
+   - `cancel_order` removes resting orders from the book (returns `false` if unknown)
    - Supports Market, Limit, Stop, IOC, FOK orders
-   - Port: `8083` (HTTP), `9093` (Metrics)
+   - Port: `8083` (HTTP), `50051` (gRPC), `9093` (Metrics)
 
 4. **Risk Engine** (`risk-service`)
 
@@ -71,15 +72,16 @@ The platform follows a microservices architecture with the following components:
 
 6. **API Gateway** (`gateway-service`)
    - Aggregates core microservices
-   - REST and WebSocket APIs
+   - REST and WebSocket APIs (browser connects directly to the gateway; Next.js does not proxy WS)
    - Swagger/OpenAPI documentation
-   - Reverse proxies: `/liquidity/*` → liquidity graph (8091), `/execution/*` → execution engine (8092)
-   - Port: `8080` (HTTP), `9090` (Metrics)
+   - Nested reverse proxies with path remainder forwarding, e.g. `/matching/*`, `/risk/*`, `/market-data/*`, `/pricing/*`, `/liquidity/*` → `8091`, `/execution/*` → `8092`
+   - CORS `OPTIONS` on proxied routes; backend URLs default to `http://127.0.0.1:<port>` (override with `*_URL` / Compose)
+   - Port: `8080` (HTTP; override with `GATEWAY_HTTP_PORT`), `9090` (Metrics)
 
 7. **Liquidity Graph Service** (`liquidity-graph-service`)
 
    - In-memory global liquidity graph (mock data) and Dijkstra-style execution planning
-   - REST: snapshot, recompute, plan
+   - REST: snapshot, recompute, plan; JSON `/health`
    - Prometheus metrics on default registry at `/metrics` on the **HTTP** port
    - Port: `8091` (HTTP + `/metrics`)
 
@@ -87,7 +89,7 @@ The platform follows a microservices architecture with the following components:
 
    - Deterministic-style pipeline: risk stub → AI venue scores → graph plan → parallel mock fills
    - Uses `fx-deterministic-core` ring buffer for hot-path handoff demo; `fx-ai-execution` HTTP client to Python
-   - Port: `8092` (HTTP + `/metrics`)
+   - JSON `/health`; Port: `8092` (HTTP + `/metrics`)
 
 ### Domain crates (Rust libraries)
 
@@ -108,6 +110,8 @@ Additional workspace crates support front-office style modeling and the liquidit
   - Portfolio and PnL tracking
   - Admin dashboard with observability views
   - Liquidity Engine page (graph snapshot, recompute, execute via gateway)
+  - Global backend status strip (gateway `/health` + WebSocket)
+  - Default API/WS base: `http://127.0.0.1:8080` (`NEXT_PUBLIC_API_URL`; `localhost` normalized to `127.0.0.1`)
   - Port: `3000`
 
 ### AI/ML Services (Python)
@@ -255,7 +259,23 @@ cargo run --bin liquidity-graph-service
 cargo run --bin execution-engine
 ```
 
-#### 3. Setup Frontend
+#### 3. Frontend + local Rust stack (recommended on Windows)
+
+For a single command that builds matching, liquidity graph, execution engine, and gateway into `target/dev-stack` (avoids locking `target/debug/*.exe`), waits on HTTP `/health`, then starts Next.js:
+
+```bash
+cd frontend/nextjs-trading-ui
+npm install
+npm run dev:stack
+```
+
+Behavior highlights:
+
+- Stops prior `matching-engine-service` / `liquidity-graph-service` / `execution-engine` / `gateway-service` processes (set `DEV_STACK_NO_KILL=1` to skip)
+- Auto-picks a free gateway port in `8080–8099` if `8080` is busy (skips Compose defaults such as `8081–8086`, `8091`, `8092`); sets `GATEWAY_HTTP_PORT` and `NEXT_PUBLIC_API_URL` for the UI
+- Pin a port with `GATEWAY_HTTP_PORT=8088` (and matching `NEXT_PUBLIC_API_URL` if you run Next separately)
+
+Or run the UI alone (gateway must already be up):
 
 ```bash
 cd frontend/nextjs-trading-ui
@@ -263,7 +283,7 @@ npm install
 npm run dev
 ```
 
-The frontend will be available at `http://localhost:3000`
+The frontend will be available at `http://localhost:3000`. Lint uses the ESLint CLI (`npm run lint`) — Next.js 16 removed `next lint`.
 
 #### 4. Setup Python ML Service
 
@@ -313,7 +333,9 @@ Services can be configured via environment variables:
 
 - `RUST_LOG`: Logging level (e.g., `info`, `debug`, `trace`)
 - `USE_YAHOO_FINANCE`: Enable real market data from Yahoo Finance (`true`/`false`, default: `false`)
-- `NEXT_PUBLIC_API_URL`: Frontend API endpoint
+- `GATEWAY_HTTP_PORT`: Gateway listen port (default `8080`)
+- `NEXT_PUBLIC_API_URL`: Frontend API/WS base URL (default `http://127.0.0.1:8080`)
+- `DEV_STACK_TARGET_DIR` / `DEV_STACK_NO_KILL`: Overrides for `npm run dev:stack`
 - `PYTHONUNBUFFERED`: Python output buffering
 - `AI_EXECUTION_URL`: Base URL for AI execution service (default `http://127.0.0.1:8093`; used by `execution-engine`)
 - `LIQUIDITY_INSTRUMENT`: Instrument string for mock liquidity graph (default `EURUSD`; used by liquidity + execution services)
@@ -362,11 +384,13 @@ cargo test -p fx-core
 cargo bench
 ```
 
-### Frontend Tests
+### Frontend Tests / Lint
 
 ```bash
 cd frontend/nextjs-trading-ui
-npm test
+npm run lint      # ESLint CLI (Next.js 16+)
+npm run format -- --check
+npm run build
 ```
 
 ### Integration Tests
@@ -426,13 +450,14 @@ docker-compose up -d
 
 ### Publishing Crates
 
-To publish Rust crates to crates.io:
+Publishable libraries (current release **0.1.2** on crates.io) include `fx-utils`, `fx-md`, `fx-risk`, `fx-core`, `fx-liquidity-graph`, `fx-pricing`, `fx-router`, `fx-gateway`, and `fx-proto`. Each package ships a `DONATION.md`. Prefer the automated script (dependency order, wait for index, restore path deps afterward):
 
-```bash
-cd crates/fx-core
-cargo publish
-# Repeat for other crates
+```powershell
+# From repo root (requires cargo login)
+.\scripts\publish-all.ps1
 ```
+
+See [PUBLISHING.md](PUBLISHING.md) for checklist and version bumps. For local workspace development, crates must use **path** dependencies (not crates.io versions) to avoid duplicate `fx_utils` type mismatches.
 
 ## 📈 Monitoring
 
@@ -496,10 +521,12 @@ Built with:
 - [Grafana](https://grafana.com/) - Visualization
 - [Jaeger](https://www.jaegertracing.io/) - Tracing
 
-## 📧 Contact
+## 📧 Contact / Donations
 
 **Author:** Roberto de Souza  
 **Email:** <rabbittrix@hotmail.com>
+
+Donation details: [DONATION.md](DONATION.md) (also included in published crates).
 
 For questions, issues, or contributions, please open an issue on [GitHub](https://github.com/rabbittrix/Ultra-Low-Latency-FX-eTrading-Platform).
 

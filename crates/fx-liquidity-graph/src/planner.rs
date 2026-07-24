@@ -132,7 +132,7 @@ pub fn plan_execution(
     let mut best: Option<(f64, Vec<String>, String, f64)> = None;
     for term in terminals {
         if let Some((cost, path)) = dijkstra_path(graph, planner, "CLIENT", term) {
-            if best.as_ref().map_or(true, |(c, _, _, _)| cost < *c) {
+            if best.as_ref().is_none_or(|(c, _, _, _)| cost < *c) {
                 // price from first hop CLIENT->*
                 let first = graph.edges_from("CLIENT").iter().find(|e| e.to == *term);
                 let px = first.map(|e| e.price).unwrap_or(1.0);
