@@ -160,7 +160,7 @@ Additional workspace crates support front-office style modeling and the liquidit
    - Grafana: <http://localhost:3001> (admin/admin)
    - Prometheus: <http://localhost:9099>
 
-**Liquidity / execution stack:** `liquidity-graph-service`, `execution-engine`, and `ai-execution-service` are not yet defined in `deploy/docker-compose.yml`. Run them locally for development (see [Getting Started](#getting-started) below) or add Dockerfiles and services to Compose as needed.
+**Liquidity / execution stack:** `liquidity-graph-service`, `execution-engine`, and `ai-execution-service` are not yet defined in `deploy/docker-compose.yml`. Run them locally for development (see (#getting-started) below) or add Dockerfiles and services to Compose as needed.
 
 ### Using Real Market Data
 
