@@ -1,0 +1,23 @@
+[package]
+name = "fx-smc-structure"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SMC market structure: swings, equal highs/lows, trendlines, sessions."
+readme = "README.md"
+
+[dependencies]
+fx-smc-common = { path = "../fx-smc-common" }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+fx-smc-marketdata = { path = "../fx-smc-marketdata" }
+proptest = { workspace = true }
+
+[lints]
+workspace = true
+

@@ -1,0 +1,25 @@
+[package]
+name = "fx-smc-strategy"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SMC trade plan builder with fixed-point R:R, confluence, and ReasoningTrace."
+readme = "README.md"
+
+[dependencies]
+fx-smc-common = { path = "../fx-smc-common" }
+fx-smc-liquidity = { path = "../fx-smc-liquidity" }
+fx-smc-structure = { path = "../fx-smc-structure" }
+fx-smc-sweep = { path = "../fx-smc-sweep" }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+fx-smc-marketdata = { path = "../fx-smc-marketdata" }
+
+[lints]
+workspace = true
+

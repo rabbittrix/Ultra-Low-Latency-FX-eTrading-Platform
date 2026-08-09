@@ -1,0 +1,21 @@
+[package]
+name = "fx-smc-journal"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Capped SMC research journal and paper trade simulator (fixed-point stats)."
+readme = "README.md"
+
+[dependencies]
+fx-smc-common = { path = "../fx-smc-common" }
+fx-smc-liquidity = { path = "../fx-smc-liquidity" }
+fx-smc-strategy = { path = "../fx-smc-strategy" }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[lints]
+workspace = true
+

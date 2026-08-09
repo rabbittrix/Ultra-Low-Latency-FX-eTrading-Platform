@@ -1,0 +1,23 @@
+[package]
+name = "fx-smc-advisory"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SMC advisory regime classification, window scoring, and suitability (informational only)."
+readme = "README.md"
+
+[dependencies]
+fx-smc-common = { path = "../fx-smc-common" }
+fx-smc-liquidity = { path = "../fx-smc-liquidity" }
+fx-smc-risk = { path = "../fx-smc-risk" }
+fx-smc-structure = { path = "../fx-smc-structure" }
+fx-smc-sweep = { path = "../fx-smc-sweep" }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[lints]
+workspace = true
+

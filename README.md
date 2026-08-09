@@ -1,14 +1,16 @@
 # Ultra-Low-Latency FX eTrading Platform
 
 [![Rust](https://img.shields.io/badge/rust-1.91+-orange.svg)](https://www.rust-lang.org/)
-[![Next.js](https://img.shields.io/badge/next.js-16.x-black)](https://nextjs.org/)
+[![Tauri](https://img.shields.io/badge/Tauri-2.x-blue)](https://tauri.app/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 **Author:** Roberto de Souza  
 **Email:** <rabbittrix@hotmail.com>  
 **License:** Apache-2.0
 
-A production-grade, ultra-low-latency Foreign Exchange (FX) electronic trading platform built with Rust microservices, Next.js frontend, and a complete observability stack. Engineered to exceed typical institutional latency requirements with sub-millisecond internal processing paths.
+A production-grade, ultra-low-latency Foreign Exchange (FX) electronic trading platform built with Rust microservices, Tauri desktop UI, and a complete observability stack. Engineered to exceed typical institutional latency requirements with sub-millisecond internal processing paths.
+
+A parallel **SMC / advisory research domain** (`fx-smc-*`) adds fixed-point market structure, liquidity mapping, and sweep detection with deterministic replay — coexisting with the live matching stack (see [ADR-0001](docs/adr/0001-smc-domain-coexistence-and-fixed-point.md)).
 
 ## 🎯 Overview
 
@@ -20,9 +22,12 @@ This platform provides a complete FX trading solution with:
 - **AI/ML integration** for volatility prediction (pricing) and venue scoring (execution)
 - **Global liquidity graph** with path planning across mock venues and internal liquidity
 - **AI-assisted execution pipeline** (Rust orchestrator + optional Python ONNX inference)
+- **SMC / liquidity research path** — fixed-point ticks (`i64`), structure → pools → sweeps, Parquet store + replay CLI
 - **Modern trading UI** with real-time order books, charts, and a liquidity-engine dashboard
 - **Complete observability** with Prometheus, Grafana, Jaeger, and ELK stack
 - **Production-ready architecture** designed for horizontal scaling
+
+**Risk note:** Advisory and research outputs are informational only. They do not promise returns. Always define invalidation and size risk before acting. See `[disclaimer]` in `config/default.toml`.
 
 ## 🏗️ Architecture
 
@@ -72,7 +77,7 @@ The platform follows a microservices architecture with the following components:
 
 6. **API Gateway** (`gateway-service`)
    - Aggregates core microservices
-   - REST and WebSocket APIs (browser connects directly to the gateway; Next.js does not proxy WS)
+   - REST and WebSocket APIs (browser connects directly to the gateway; the UI does not proxy WS)
    - Swagger/OpenAPI documentation
    - Nested reverse proxies with path remainder forwarding, e.g. `/matching/*`, `/risk/*`, `/market-data/*`, `/pricing/*`, `/liquidity/*` → `8091`, `/execution/*` → `8092`
    - CORS `OPTIONS` on proxied routes; backend URLs default to `http://127.0.0.1:<port>` (override with `*_URL` / Compose)
@@ -88,7 +93,7 @@ The platform follows a microservices architecture with the following components:
 8. **Execution Engine** (`execution-engine`)
 
    - Deterministic-style pipeline: risk stub → AI venue scores → graph plan → parallel mock fills
-   - Uses `fx-deterministic-core` ring buffer for hot-path handoff demo; `fx-ai-execution` HTTP client to Python
+   - Uses `fx-deterministic-core` ring buffer for hot-path handoff demo; `fx-ai-execution` **in-process** venue scorer (optional HTTP to Python)
    - JSON `/health`; Port: `8092` (HTTP + `/metrics`)
 
 ### Domain crates (Rust libraries)
@@ -98,21 +103,43 @@ Additional workspace crates support front-office style modeling and the liquidit
 - `fx-oms`, `fx-ems` — order / execution management types
 - `fx-exchange`, `fx-lp` — venue and liquidity-provider modeling
 - `fx-liquidity-graph` — graph types and planning
-- `fx-ai-execution` — low-latency HTTP client to the AI execution service
+- `fx-ai-execution` — in-process venue scoring (+ optional HTTP remote)
 - `fx-deterministic-core` — deterministic ring buffer and TCP helpers
 
-### Frontend (Next.js)
+### SMC / advisory domain (`fx-smc-*`)
 
-- **Trading UI** (`nextjs-trading-ui`)
+Parallel research stack (does **not** replace the matching engine). Prices are **`i64` ticks**; time is **`i64` UTC nanos**. No `f64` prices. Config: `config/default.toml`. ADRs: `docs/adr/`.
+
+| Crate / binary | Role | Milestone |
+| -------------- | ---- | --------- |
+| `fx-smc-common` | `Tick`, `Px`/`Qty`, logical clock, BLAKE3 event hash, TOML config | M0 |
+| `fx-smc-marketdata` | Deterministic synthetic ticks (incl. injected sweeps) | M0 |
+| `fx-smc-store` | Parquet ticks; optional Postgres (`--features postgres`) | M0/M8 |
+| `fx-smc-advisory-api` | Axum HTTP/WS + OpenAPI + optional Telegram | M9 |
+| `fx-smc-benches` | Criterion benches + spread/spike tests | M10 |
+
+CLIs / services:
+
+- `fx-smc-replay-cli` — synth → Parquet → event hash + disclaimer
+- `fx-smc-advisory-api` — port **8094** (`SMC_API_PORT` override); Swagger `/docs`; `POST /v1/analyze`; `GET /ws`
+
+Telegram alerts: set `api.telegram_enabled = true` **and** env `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` (never commit secrets).
+
+**Milestones M0–M10:** complete for the SMC research path (see `docs/adr/`).
+
+### Frontend (Tauri + Vite + React)
+
+- **Trading UI** (`tauri-trading-ui`)
   - Real-time order book visualization
   - Live price charts (supports real Yahoo Finance data)
   - Order ticket panel
   - Portfolio and PnL tracking
-  - Admin dashboard with observability views
+  - Admin dashboard; Observability page embeds live metrics + SMC in-app
   - Liquidity Engine page (graph snapshot, recompute, execute via gateway)
   - Global backend status strip (gateway `/health` + WebSocket)
-  - Default API/WS base: `http://127.0.0.1:8080` (`NEXT_PUBLIC_API_URL`; `localhost` normalized to `127.0.0.1`)
-  - Port: `3000`
+  - Default API/WS base: `http://127.0.0.1:8080` (`VITE_API_URL`; `localhost` normalized to `127.0.0.1`)
+  - Desktop shell: Tauri 2 (CSP + minimal capabilities)
+  - Optional web preview: Vite / nginx static SPA (Compose host port 3002)
 
 ### AI/ML Services (Python)
 
@@ -122,17 +149,15 @@ Additional workspace crates support front-office style modeling and the liquidit
   - FastAPI-based
   - Port: `8086`
 
-- **AI Execution Service** (`ai/ai-execution-service`)
-  - Venue-level inference: ONNX when `model.onnx` is present, else NumPy fallback
-  - Train/export helper: `train_export.py` (scikit-learn → ONNX)
-  - Port: `8093` (override with `PORT`)
+- **AI Execution Service** (`ai/ai-execution-service`) — **optional**
+  - Training / ONNX export and optional remote inference
+  - Hot path uses Rust in-process scorer (`AI_EXECUTION_MODE=local`, default)
+  - Port: `8093` only when running remote (`AI_EXECUTION_MODE=http`)
 
 ### Observability Stack
 
-- **Prometheus**: Metrics collection and storage
-- **Grafana**: Visualization dashboards
-- **Jaeger**: Distributed tracing
-- **Elasticsearch + Kibana + Fluentd**: Log aggregation and analysis
+- **In-app (Tauri):** `/observability` scrapes each service `/health` + `/metrics` and draws charts locally (no Prometheus required)
+- **Prometheus / Grafana / Jaeger / ELK:** optional via Docker Compose for deep SRE work
 
 ## 🚀 Quick Start
 
@@ -181,46 +206,64 @@ environment:
 
 ```text
 .
-├── crates/                    # Publishable Rust libraries
-│   ├── fx-core/              # Matching engine core logic
-│   ├── fx-oms/               # Order management types
-│   ├── fx-ems/               # Execution management types
-│   ├── fx-md/                # Market data processing
-│   ├── fx-exchange/          # Exchange / venue modeling
-│   ├── fx-lp/                # Liquidity provider modeling
-│   ├── fx-pricing/           # Pricing engine
-│   ├── fx-risk/              # Risk management
-│   ├── fx-router/            # Order routing
-│   ├── fx-gateway/           # API gateway utilities
-│   ├── fx-proto/             # gRPC protocol definitions
-│   ├── fx-utils/             # Shared utilities
-│   ├── fx-liquidity-graph/   # Global liquidity graph + planning
-│   ├── fx-ai-execution/      # HTTP client for AI execution inference
-│   └── fx-deterministic-core/# Deterministic ring buffer + socket helpers
+├── config/
+│   └── default.toml           # SMC / advisory defaults (no secrets)
+├── docs/
+│   ├── adr/                   # Architecture Decision Records (SMC + platform)
+│   ├── ARCHITECTURE.md
+│   └── API.md
+├── crates/                    # Publishable / workspace Rust libraries
+│   ├── fx-core/               # Matching engine core logic
+│   ├── fx-oms/                # Order management types
+│   ├── fx-ems/                # Execution management types
+│   ├── fx-md/                 # Market data processing
+│   ├── fx-exchange/           # Exchange / venue modeling
+│   ├── fx-lp/                 # Liquidity provider modeling
+│   ├── fx-pricing/            # Pricing engine
+│   ├── fx-risk/               # Risk management
+│   ├── fx-router/             # Order routing
+│   ├── fx-gateway/            # API gateway utilities
+│   ├── fx-proto/              # gRPC protocol definitions
+│   ├── fx-utils/              # Shared utilities
+│   ├── fx-liquidity-graph/    # Global liquidity graph + planning
+│   ├── fx-ai-execution/       # In-process (+ optional HTTP) venue AI scoring
+│   ├── fx-deterministic-core/ # Deterministic ring buffer + socket helpers
+│   ├── fx-smc-common/         # SMC types, clock, hash, config
+│   ├── fx-smc-marketdata/     # Synthetic tick generator
+│   ├── fx-smc-store/          # Parquet tick store
+│   ├── fx-smc-replay/         # Replay helpers
+│   ├── fx-smc-structure/      # Swings / equals / BOS-CHoCH / FVG / sessions
+│   ├── fx-smc-liquidity/      # Pool mapping + scoring
+│   ├── fx-smc-sweep/          # Sweep detector
+│   ├── fx-smc-strategy/       # Trade plans + ReasoningTrace
+│   ├── fx-smc-backtest/       # Walk-forward + costs (no look-ahead)
+│   ├── fx-smc-risk/           # Sizing + kill-switch
+│   ├── fx-smc-advisory/       # Regime / WindowScore / suitability
+│   ├── fx-smc-journal/        # Journal + paper sim
+│   ├── fx-smc-execution/      # Hot-path SPSC rtrb rings
+│   └── fx-smc-benches/        # Criterion + spike tests
 ├── services/                  # Service binaries
-│   ├── market-data-service/  # Market data with Yahoo Finance support
+│   ├── market-data-service/   # Market data with Yahoo Finance support
 │   ├── pricing-service/
 │   ├── matching-engine-service/
 │   ├── risk-service/
 │   ├── router-service/
 │   ├── gateway-service/
 │   ├── liquidity-graph-service/
-│   └── execution-engine/
+│   ├── execution-engine/
+│   ├── fx-smc-replay-cli/     # SMC synth / hash / Parquet CLI
+│   └── fx-smc-advisory-api/   # SMC advisory HTTP/WS (OpenAPI)
 ├── frontend/
-│   └── nextjs-trading-ui/    # Next.js trading interface (+ liquidity-engine page)
+│   └── tauri-trading-ui/      # Tauri 2 + Vite/React trading UI (+ liquidity-engine)
 ├── ai/
-│   ├── python-ml-service/    # Volatility / pricing ML
-│   └── ai-execution-service/ # Venue scoring for execution engine
+│   ├── python-ml-service/     # Volatility / pricing ML
+│   └── ai-execution-service/  # Optional remote/train ONNX venue scoring
 └── deploy/
-    ├── docker-compose.yml    # Complete stack orchestration
-    ├── prometheus.yml        # Prometheus configuration
-    ├── grafana/              # Grafana configuration
-    │   ├── provisioning/     # Grafana provisioning
-    │   │   ├── datasources/  # Datasource configurations
-    │   │   └── dashboards/    # Dashboard configurations
-    │   └── dashboards/       # Dashboard JSON files
-    ├── fluentd/              # Fluentd log aggregation
-    └── Dockerfile.*          # Service-specific Dockerfiles
+    ├── docker-compose.yml     # Complete stack orchestration
+    ├── prometheus.yml         # Prometheus configuration
+    ├── grafana/               # Grafana configuration
+    ├── fluentd/               # Fluentd log aggregation
+    └── Dockerfile.*           # Service-specific Dockerfiles
 ```
 
 ## 🚀 Getting Started
@@ -257,33 +300,60 @@ cargo run --bin router-service
 cargo run --bin gateway-service
 cargo run --bin liquidity-graph-service
 cargo run --bin execution-engine
+
+# SMC research CLI (optional path to config; default config/default.toml)
+cargo run -p fx-smc-replay-cli -- config/default.toml
+
+# SMC advisory API (OpenAPI at /docs)
+cargo run -p fx-smc-advisory-api -- config/default.toml
+```
+
+#### 2b. SMC domain tests (M0–M10)
+
+```bash
+cargo test -p fx-smc-structure -p fx-smc-liquidity -p fx-smc-sweep \
+  -p fx-smc-strategy -p fx-smc-backtest -p fx-smc-risk \
+  -p fx-smc-advisory -p fx-smc-journal -p fx-smc-execution -p fx-smc-benches
+
+cargo clippy -p fx-smc-strategy -p fx-smc-backtest -p fx-smc-risk \
+  -p fx-smc-advisory -p fx-smc-journal -p fx-smc-execution -p fx-smc-advisory-api \
+  --all-targets -- -D warnings
+
+# Research-path latency (Criterion percentiles)
+cargo bench -p fx-smc-benches
 ```
 
 #### 3. Frontend + local Rust stack (recommended on Windows)
 
-For a single command that builds matching, liquidity graph, execution engine, and gateway into `target/dev-stack` (avoids locking `target/debug/*.exe`), waits on HTTP `/health`, then starts Next.js:
+For a single command that builds matching, liquidity graph, execution engine, and gateway into `target/dev-stack` (avoids locking `target/debug/*.exe`), waits on HTTP `/health`, then starts the Tauri desktop UI:
 
 ```bash
-cd frontend/nextjs-trading-ui
+# From repo root (proxies into frontend/tauri-trading-ui)
+npm run install:ui
+npm run dev:stack
+
+# Or from the UI package directly
+cd frontend/tauri-trading-ui
 npm install
 npm run dev:stack
 ```
 
 Behavior highlights:
 
-- Stops prior `matching-engine-service` / `liquidity-graph-service` / `execution-engine` / `gateway-service` processes (set `DEV_STACK_NO_KILL=1` to skip)
-- Auto-picks a free gateway port in `8080–8099` if `8080` is busy (skips Compose defaults such as `8081–8086`, `8091`, `8092`); sets `GATEWAY_HTTP_PORT` and `NEXT_PUBLIC_API_URL` for the UI
-- Pin a port with `GATEWAY_HTTP_PORT=8088` (and matching `NEXT_PUBLIC_API_URL` if you run Next separately)
+- Stops prior `matching-engine-service` / `risk-service` / `liquidity-graph-service` / `execution-engine` / `gateway-service` (and frees AI port 8093); set `DEV_STACK_NO_KILL=1` to skip
+- Starts **risk-service** (`8084`) for Portfolio `/risk/exposure`. Venue AI scoring runs **in-process in Rust** (no Python venv). Optional remote: `DEV_STACK_WITH_AI=1` + `AI_EXECUTION_MODE=http`
+- Auto-picks a free gateway port in `8080–8099` if `8080` is busy (skips Compose defaults such as `8081–8086`, `8091`, `8092`, `8093`); sets `GATEWAY_HTTP_PORT` and `VITE_API_URL` for the UI
+- Pin a port with `GATEWAY_HTTP_PORT=8088` (and matching `VITE_API_URL` if you run the UI separately)
 
 Or run the UI alone (gateway must already be up):
 
 ```bash
-cd frontend/nextjs-trading-ui
+cd frontend/tauri-trading-ui
 npm install
 npm run dev
 ```
 
-The frontend will be available at `http://localhost:3000`. Lint uses the ESLint CLI (`npm run lint`) — Next.js 16 removed `next lint`.
+The Tauri window opens against Vite on `http://127.0.0.1:1420`. For browser-only UI: `DEV_STACK_WEB_ONLY=1 npm run dev:stack`. Desktop release: `npm run tauri:build`. Lint: `npm run lint`.
 
 #### 4. Setup Python ML Service
 
@@ -295,7 +365,9 @@ pip install -r requirements.txt
 python main.py
 ```
 
-#### 4b. AI Execution Service (for `execution-engine`)
+#### 4b. AI Execution Service (optional remote / training)
+
+Venue scoring is **in-process Rust** by default. Only start Python if you need remote HTTP or model training:
 
 ```bash
 cd ai/ai-execution-service
@@ -306,7 +378,7 @@ pip install -r requirements.txt
 python main.py
 ```
 
-Default URL is `http://127.0.0.1:8093`. The Rust execution engine reads `AI_EXECUTION_URL` if set.
+Then run the engine with `AI_EXECUTION_MODE=http` and `AI_EXECUTION_URL=http://127.0.0.1:8093` (or `DEV_STACK_WITH_AI=1 npm run dev:stack`).
 
 #### 5. Run with Docker Compose
 
@@ -327,6 +399,26 @@ This will start all services including the observability stack. Access:
 
 ## 🔧 Configuration
 
+### SMC / advisory (`config/default.toml`)
+
+| Section | Purpose |
+| ------- | ------- |
+| `[instrument.default]` | Symbol, `price_scale`, `tick_size` (fixed-point) |
+| `[synth]` | Deterministic synthetic series + injected sweeps |
+| `[store]` | Parquet directory |
+| `[structure.*]` | Swing / equal / trendline / session windows (UTC) |
+| `[liquidity]` | Pool score weights and thresholds |
+| `[sweep]` | Pierce / reclaim / confirm window |
+| `[strategy]` | Min R:R, confluence points, stop buffer |
+| `[backtest]` | Spread / commission / slippage + walk-forward lengths |
+| `[risk]` | Risk bps, max open, daily-loss kill switch |
+| `[advisory]` | Regime window, suitability confluence |
+| `[journal]` | Cap + paper slippage |
+| `[api]` | Advisory HTTP port + Telegram enable flag |
+| `[disclaimer]` | User-facing risk text (never promises returns) |
+
+Secrets must come from environment variables only — never commit credentials into TOML.
+
 ### Environment Variables
 
 Services can be configured via environment variables:
@@ -334,12 +426,15 @@ Services can be configured via environment variables:
 - `RUST_LOG`: Logging level (e.g., `info`, `debug`, `trace`)
 - `USE_YAHOO_FINANCE`: Enable real market data from Yahoo Finance (`true`/`false`, default: `false`)
 - `GATEWAY_HTTP_PORT`: Gateway listen port (default `8080`)
-- `NEXT_PUBLIC_API_URL`: Frontend API/WS base URL (default `http://127.0.0.1:8080`)
+- `VITE_API_URL`: Frontend API/WS base URL (default `http://127.0.0.1:8080`)
 - `DEV_STACK_TARGET_DIR` / `DEV_STACK_NO_KILL`: Overrides for `npm run dev:stack`
 - `PYTHONUNBUFFERED`: Python output buffering
-- `AI_EXECUTION_URL`: Base URL for AI execution service (default `http://127.0.0.1:8093`; used by `execution-engine`)
+- `AI_EXECUTION_MODE`: `local` (default, in-process Rust) or `http` (remote Python/ONNX)
+- `AI_EXECUTION_URL`: Base URL when mode is `http` (default `http://127.0.0.1:8093`)
 - `LIQUIDITY_INSTRUMENT`: Instrument string for mock liquidity graph (default `EURUSD`; used by liquidity + execution services)
-- `PORT`: AI execution service listen port (default `8093`)
+- `PORT`: AI execution service listen port when running Python remotely (default `8093`)
+- `SMC_API_PORT`: Override advisory API listen port (default from `[api].http_port`, `8094`)
+- `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID`: Optional Telegram alerts for advisory API (never commit)
 
 ### Service Ports
 
@@ -355,6 +450,7 @@ Services can be configured via environment variables:
 | Liquidity Graph      | 8091      | (same host)  |
 | Execution Engine     | 8092      | (same host)  |
 | AI Execution         | 8093      | -            |
+| SMC Advisory API     | 8094      | -            |
 | Frontend             | 3000      | -            |
 
 Liquidity graph and execution engine expose Prometheus metrics at `GET /metrics` on their HTTP ports (no separate metrics listener).
@@ -380,17 +476,24 @@ cargo test
 # Run tests for specific crate
 cargo test -p fx-core
 
-# Run with benchmarks
-cargo bench
+# SMC domain
+cargo test -p fx-smc-common -p fx-smc-marketdata -p fx-smc-store -p fx-smc-replay
+cargo test -p fx-smc-structure -p fx-smc-liquidity -p fx-smc-sweep
+cargo test -p fx-smc-strategy -p fx-smc-backtest -p fx-smc-risk
+cargo test -p fx-smc-advisory -p fx-smc-journal -p fx-smc-benches
+
+# Research-path benchmarks (latency percentiles via Criterion)
+cargo bench -p fx-smc-benches
 ```
 
 ### Frontend Tests / Lint
 
 ```bash
-cd frontend/nextjs-trading-ui
-npm run lint      # ESLint CLI (Next.js 16+)
+cd frontend/tauri-trading-ui
+npm run lint
 npm run format -- --check
 npm run build
+npm run tauri:build   # native desktop installer (platform-dependent)
 ```
 
 ### Integration Tests
@@ -419,6 +522,25 @@ cargo doc --open
 ### Architecture Documentation
 
 See `flow-fx-et.md` and `docs/ARCHITECTURE.md` for diagrams and service interactions. REST details for the liquidity and execution APIs are in `docs/API.md`.
+
+SMC / advisory decisions live under `docs/adr/`:
+
+| ADR | Topic |
+| --- | ----- |
+| [0001](docs/adr/0001-smc-domain-coexistence-and-fixed-point.md) | Coexistence with `fx-*` + fixed-point prices |
+| [0002](docs/adr/0002-structure-fixed-point-geometry.md) | Structure geometry (rational slopes) |
+| [0003](docs/adr/0003-liquidity-pool-scoring.md) | Liquidity pool scoring |
+| [0004](docs/adr/0004-tick-level-liquidity-sweep.md) | Sweep pierce + pre-close confirmation |
+| [0005](docs/adr/0005-sweep-trade-plans.md) | Trade plans, R:R, ReasoningTrace |
+| [0006](docs/adr/0006-backtest-no-lookahead.md) | Prefix-only backtest |
+| [0007](docs/adr/0007-risk-sizing-kill-switch.md) | Risk sizing + kill switch |
+| [0008](docs/adr/0008-advisory-regime-suitability.md) | Regime / suitability |
+| [0009](docs/adr/0009-journal-paper-simulator.md) | Journal + paper sim |
+| [0010](docs/adr/0010-advisory-http-api.md) | Advisory HTTP/WS API |
+| [0011](docs/adr/0011-smc-hardening-benches.md) | Benches + spike tests |
+| [0012](docs/adr/0012-liquidity-and-window-scoring.md) | Liquidity + entry-window scores (GREEN/YELLOW/RED) |
+
+Full index: [`docs/adr/README.md`](docs/adr/README.md).
 
 ## 🔒 Security
 
@@ -450,7 +572,7 @@ docker-compose up -d
 
 ### Publishing Crates
 
-Publishable libraries (current release **0.1.2** on crates.io) include `fx-utils`, `fx-md`, `fx-risk`, `fx-core`, `fx-liquidity-graph`, `fx-pricing`, `fx-router`, `fx-gateway`, and `fx-proto`. Each package ships a `DONATION.md`. Prefer the automated script (dependency order, wait for index, restore path deps afterward):
+Publishable libraries (current release **0.1.3** on crates.io) include `fx-utils`, `fx-md`, `fx-risk`, `fx-core`, `fx-liquidity-graph`, `fx-pricing`, `fx-router`, `fx-gateway`, and `fx-proto`. Each package ships a `DONATION.md`. Prefer the automated script (dependency order, wait for index, restore path deps afterward):
 
 ```powershell
 # From repo root (requires cargo login)
@@ -494,7 +616,8 @@ Distributed tracing via Jaeger shows request flows across all microservices.
 
 ### Code Standards
 
-- **Rust**: Follow `rustfmt` and `clippy` guidelines
+- **Rust**: `rustfmt`, `clippy` (`-D warnings`; pedantic on `fx-smc-*`)
+- **SMC libs**: `thiserror`; bins: `anyhow`; no `unwrap`/`expect` outside tests; no `f64` prices
 - **TypeScript**: Use ESLint and Prettier
 - **Python**: Follow PEP 8
 - **Documentation**: All public APIs must be documented
@@ -515,7 +638,8 @@ Built with:
 - [Rust](https://www.rust-lang.org/) - Systems programming language
 - [Tokio](https://tokio.rs/) - Async runtime
 - [Axum](https://github.com/tokio-rs/axum) - Web framework
-- [Next.js](https://nextjs.org/) - React framework
+- [Tauri](https://tauri.app/) - Secure native desktop shell
+- [Vite](https://vitejs.dev/) / [React](https://react.dev/) - Trading UI
 - [FastAPI](https://fastapi.tiangolo.com/) - Python web framework
 - [Prometheus](https://prometheus.io/) - Metrics
 - [Grafana](https://grafana.com/) - Visualization
@@ -532,4 +656,4 @@ For questions, issues, or contributions, please open an issue on [GitHub](https:
 
 ---
 
-**Note**: This is a production-grade platform designed for real financial environments. Ensure proper testing and compliance with regulatory requirements before deployment.
+**Note**: This is a production-grade platform designed for real financial environments. Ensure proper testing and compliance with regulatory requirements before deployment. SMC / advisory modules are research tooling — not investment advice and not a guarantee of profitability.

@@ -1,8 +1,18 @@
-# AI Execution Service
+# AI Execution Service (optional / offline training)
 
-FastAPI service used by `execution-engine` for per-venue scores. Uses ONNX Runtime when `model.onnx` is present; otherwise a NumPy fallback.
+Venue scoring for the execution pipeline is **embedded in Rust** by default
+(`fx-ai-execution` in-process logistic scorer). No Python venv is required for
+`npm run dev:stack` or production execution.
 
-## Run
+This FastAPI app remains for:
+
+- Training / exporting `model.onnx` (`train_export.py`)
+- Optional remote inference when you set:
+  - `AI_EXECUTION_MODE=http`
+  - `AI_EXECUTION_URL=http://127.0.0.1:8093`
+  - and for local stack: `DEV_STACK_WITH_AI=1`
+
+## Run (optional remote)
 
 ```bash
 python -m venv .venv
@@ -12,7 +22,7 @@ pip install -r requirements.txt
 python main.py
 ```
 
-Default listen port: **8093** (`PORT` env overrides). Point Rust at it with `AI_EXECUTION_URL` (default `http://127.0.0.1:8093`).
+Default listen port: **8093** (`PORT` env overrides).
 
 ## Train / export ONNX
 

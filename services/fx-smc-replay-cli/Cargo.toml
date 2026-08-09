@@ -1,0 +1,22 @@
+[package]
+name = "fx-smc-replay-cli"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "CLI: synth → Parquet → deterministic replay hash (SMC M0)."
+publish = false
+
+[[bin]]
+name = "fx-smc-replay-cli"
+path = "src/main.rs"
+
+[dependencies]
+fx-smc-common = { path = "../../crates/fx-smc-common" }
+fx-smc-marketdata = { path = "../../crates/fx-smc-marketdata" }
+fx-smc-store = { path = "../../crates/fx-smc-store" }
+fx-smc-replay = { path = "../../crates/fx-smc-replay" }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }

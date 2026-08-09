@@ -1,0 +1,194 @@
+# SMC / advisory default configuration
+#
+# Secrets must come from environment variables only — never commit credentials here.
+# Prices are fixed-point i64 ticks; `tick_size` defines one price increment in instrument units
+# scaled by `price_scale` (e.g. price_scale=10000, tick_size=1 → 0.0001 quote increment).
+
+[instrument.default]
+symbol = "EURUSD"
+price_scale = 10000
+tick_size = 1
+qty_scale = 1
+
+[clock]
+# Logical clock starts at this UTC nanos when replaying if ticks lack an absolute base.
+epoch_ns = 0
+
+[synth]
+seed = 42
+tick_count = 10_000
+# Base mid in ticks (1.1000 with price_scale=10000 → 11000)
+base_mid_ticks = 11000
+# Random walk amplitude in ticks
+walk_ticks = 5
+# Inject a liquidity sweep every N ticks (0 = disabled)
+sweep_every = 500
+sweep_break_ticks = 8
+
+[store]
+# Relative to process CWD unless absolute
+parquet_dir = "data/smc/parquet"
+# Optional; prefer SMC_DATABASE_URL env for secrets.
+# postgres_url = "postgres://smc:smc@127.0.0.1:5432/smc"
+
+[tracing]
+default_filter = "info,fx_smc_replay=debug,fx_smc_marketdata=debug,fx_smc_structure=debug,fx_smc_liquidity=debug,fx_smc_sweep=debug,fx_smc_strategy=debug,fx_smc_backtest=debug,fx_smc_risk=debug,fx_smc_advisory=debug,fx_smc_journal=debug"
+
+[disclaimer]
+# Shown by advisory/API surfaces (M7+). Never promise returns.
+text = "Trading involves substantial risk of loss. Signals are informational only, not investment advice. Always define invalidation and size risk before acting. Past simulation results do not predict future outcomes."
+
+[structure.swings]
+# Bars on each side that must be strictly dominated for a pivot.
+left_strength = 2
+right_strength = 2
+
+[structure.equal]
+# Equal high/low tolerance = max(pips_min_ticks, k_atr_num/k_atr_den * atr_ticks)
+pips_min_ticks = 2
+k_atr_num = 1
+k_atr_den = 2
+atr_lookback = 20
+
+[structure.trendline]
+min_touches = 2
+# Max vertical distance from projected line (ticks) to count as a touch.
+touch_tolerance_ticks = 3
+
+[structure.sessions]
+# UTC hour windows [start, end) — end may wrap past midnight (e.g. 22..6).
+asia_start_hour_utc = 0
+asia_end_hour_utc = 7
+# Previous day / week extremes use calendar day boundaries in UTC.
+track_pdh_pdl = true
+track_wh_wl = true
+
+[structure.fvg]
+min_gap_ticks = 1
+
+# Mapping-only (ADR-0012): which structure features become pools.
+[liquidity]
+min_equal_members = 2
+min_trendline_touches = 2
+# Cap mapped pools so advisory UI / analyze stay responsive (0 = unlimited).
+max_mapped_pools = 64
+
+# Fixed-point pool scoring (ADR-0012). Weights must sum to score_scale.
+[liquidity_score]
+score_scale = 10000
+touches_cap = 4
+# 24 hours in nanoseconds
+half_life_ns = 86_400_000_000_000
+# 2.0 ATR → 2000 milli-ATR
+lambda_atr_milli = 2000
+equality_tol_ticks = 2
+w_touches = 2500
+w_equality = 1500
+w_recency = 2000
+w_distance = 2500
+w_context = 1500
+ctx_session = 10000
+ctx_pdh_pdl_wh_wl = 9000
+ctx_round = 7000
+ctx_none = 5000
+round_number_ticks = 100
+
+# Entry-window traffic light (ADR-0012). Weights must sum to score_scale.
+[window_score]
+score_scale = 10000
+# 6h half-life, 12h max age for confirmed sweeps
+sweep_half_life_ns = 21_600_000_000_000
+sweep_max_age_ns = 43_200_000_000_000
+# R:R in milli-R (1000 = 1.0R)
+rr_floor_milli = 1000
+rr_cap_milli = 5000
+min_rr_milli = 3000
+news_blackout_min = 30
+w_sweep = 3500
+w_conf = 2000
+w_rr = 2000
+w_regime = 1500
+w_session = 1000
+thr_green = 7500
+thr_yellow = 5500
+# London kill-zone stub (UTC hours [start, end))
+killzone_start_hour_utc = 7
+killzone_end_hour_utc = 10
+
+[sweep]
+# Pierce must exceed the pool by at least this many ticks.
+min_pierce_ticks = 1
+# After pierce, reclaim must cross back past the pool by this many ticks (0 = touch reclaim).
+min_reclaim_ticks = 0
+# Max ticks after pierce allowed for pre-close confirmation (no look-ahead beyond this window).
+confirm_max_ticks = 24
+# true: SellSide pierce uses ask / reclaim uses bid; BuySide pierce uses bid / reclaim uses ask.
+use_bid_ask_extremes = true
+# Ignore pools scoring below this (relative to liquidity_score.score_scale).
+min_pool_score = 0
+
+[strategy]
+min_rr_num = 15
+min_rr_den = 10
+min_confluence = 2500
+score_scale = 10000
+# Legacy alias floor; effective buffer = max(stop_buffer_ticks, pips + atr*num/den)
+stop_buffer_ticks = 2
+stop_buffer_pips_ticks = 2
+stop_atr_num = 1
+stop_atr_den = 4
+stop_atr_lookback = 20
+fallback_rr_num = 20
+fallback_rr_den = 10
+pts_sweep = 4000
+pts_equal = 2000
+pts_session = 2500
+pts_trendline = 2000
+pts_strong_displace = 1500
+strong_displacement_ticks = 5
+
+[backtest]
+spread_ticks = 1
+commission_ticks_per_side = 0
+slippage_ticks_per_side = 1
+walk_train_ticks = 2000
+walk_test_ticks = 500
+max_hold_ticks = 200
+# Fill model (Xoshiro market entry + limit exits)
+fill_base_slippage_ticks = 1
+fill_vol_lookback = 16
+fill_vol_slippage_num = 1
+fill_vol_slippage_den = 8
+fill_jitter_max_ticks = 2
+fill_sweep_proximity_ticks = 8
+fill_sweep_spread_mult_num = 3
+fill_sweep_spread_mult_den = 2
+
+[risk]
+risk_per_trade_bps = 50
+max_open_plans = 3
+max_daily_loss_ticks = 500
+min_stop_ticks = 2
+default_equity_ticks = 100_000
+sizing_mode = "fixed_bps"
+# Half-Kelly of configured edge (research inputs only — not predicted returns)
+kelly_fraction_milli = 250
+kelly_win_prob_milli = 550
+kelly_payoff_milli = 1500
+max_spread_ticks = 20
+max_tick_latency_ns = 500_000_000
+
+[advisory]
+window_ticks = 256
+score_scale = 10000
+volatile_atr_ticks = 40
+trend_drift_ticks = 15
+min_suitability_confluence = 2500
+
+[journal]
+max_entries = 10_000
+paper_slippage_ticks = 1
+
+[api]
+http_port = 8094
+telegram_enabled = false

@@ -1,0 +1,24 @@
+[package]
+name = "fx-smc-benches"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SMC research-path Criterion benchmarks (M10)."
+publish = false
+
+[dev-dependencies]
+criterion = { workspace = true }
+fx-smc-common = { path = "../fx-smc-common" }
+fx-smc-marketdata = { path = "../fx-smc-marketdata" }
+fx-smc-liquidity = { path = "../fx-smc-liquidity" }
+fx-smc-sweep = { path = "../fx-smc-sweep" }
+
+[[bench]]
+name = "smc_hot_path"
+harness = false
+
+[lints]
+workspace = true
+

@@ -136,27 +136,27 @@ services:
       start_period: 15s
     restart: unless-stopped
 
-  # Frontend (host 3002 avoids clashing with local `npm run dev` on 3000)
+  # Optional static web UI (Vite/nginx). Prefer the Tauri desktop app for production trading.
+  # Host 3002 → container 80. Browser must reach the gateway on the host (default 8080).
   frontend:
     build:
-      context: ../frontend/nextjs-trading-ui
+      context: ../frontend/tauri-trading-ui
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://127.0.0.1:8080}
     ports:
-      - "${FRONTEND_HOST_PORT:-3002}:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://gateway-service:8080
-      - NODE_ENV=production
+      - "${FRONTEND_HOST_PORT:-3002}:80"
     networks:
       - fx-network
     depends_on:
       gateway-service:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 20s
     restart: unless-stopped
 
   # AI Service (Optional - may fail to build due to SSL network issues)

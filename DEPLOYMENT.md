@@ -118,7 +118,7 @@ RISK_URL=http://risk-service:8084
 RUST_LOG=info
 
 # Frontend
-NEXT_PUBLIC_API_URL=http://gateway-service:8080
+VITE_API_URL=http://gateway-service:8080
 NODE_ENV=production
 
 # Grafana

@@ -1,0 +1,23 @@
+[package]
+name = "fx-smc-marketdata"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SMC market data ingest helpers and deterministic synthetic tick generator."
+readme = "README.md"
+
+[dependencies]
+fx-smc-common = { path = "../fx-smc-common" }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+fx-smc-liquidity = { path = "../fx-smc-liquidity" }
+fx-smc-sweep = { path = "../fx-smc-sweep" }
+
+[lints]
+workspace = true
+

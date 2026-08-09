@@ -9,7 +9,7 @@
 
 The Ultra-Low-Latency FX eTrading Platform follows a microservices architecture with the following layers:
 
-1. **Frontend Layer**: Next.js trading interface
+1. **Frontend Layer**: Tauri + Vite/React trading UI
 2. **API Gateway Layer**: Single entry point for all services
 3. **Business Logic Layer**: Core trading services
 4. **Data Layer**: Market data and order book
@@ -18,7 +18,7 @@ The Ultra-Low-Latency FX eTrading Platform follows a microservices architecture 
 ### Service Communication
 
 ```text
-Frontend (Next.js) ──HTTP/WS──► Gateway (direct; no Next.js WS rewrite)
+Frontend (Tauri) ──HTTP/WS──► Gateway (direct)
                                     │
                     nest("/matching"|/risk|/market-data|/pricing|/liquidity|/execution")
                                     │  OriginalUri remainder → backend path
@@ -80,11 +80,11 @@ Gateway paths (examples): `/matching/trades` → matching `:8083/trades`; `/liqu
 - **Port**: 8080 (override `GATEWAY_HTTP_PORT`)
 - **Dependencies**: All backend services
 - **Proxied routes**: Nested routers for `/matching`, `/risk`, `/market-data`, `/pricing`, `/liquidity` → `8091`, `/execution` → `8092`; CORS `OPTIONS` → `204`
-- **Frontend**: Browser uses `NEXT_PUBLIC_API_URL` / `ws://…/ws` against the gateway (not a Next.js WS proxy)
+- **Frontend**: Desktop/web UI uses `VITE_API_URL` / `ws://…/ws` against the gateway directly
 
 ### Local UI + core stack
 
-`frontend/nextjs-trading-ui` **`npm run dev:stack`** builds matching, liquidity-graph, execution-engine, and gateway into `target/dev-stack`, health-checks each service, then starts Next.js. See root [README](../README.md#3-frontend--local-rust-stack-recommended-on-windows).
+`frontend/tauri-trading-ui` **`npm run dev:stack`** builds matching, risk, liquidity-graph, execution-engine, and gateway into `target/dev-stack`, health-checks each service, then starts Tauri. Venue AI scoring is **in-process Rust** by default (optional Python remote with `DEV_STACK_WITH_AI=1`). See root [README](../README.md#3-frontend--local-rust-stack-recommended-on-windows).
 
 ### Liquidity Graph Service
 
@@ -165,11 +165,12 @@ Gateway paths (examples): `/matching/trades` → matching `:8083/trades`; `/liqu
 
 ### Frontend
 
-- **Framework**: Next.js 16.x
+- **Framework**: Tauri 2 + Vite + React 18
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
 - **State Management**: React Hooks
-- **Lint**: ESLint CLI (`eslint .`) — `next lint` removed in Next.js 16
+- **Lint**: ESLint CLI (`eslint .`)
+- **Security**: Tauri CSP + minimal capabilities; observability links open via system browser
 
 ### Observability
 

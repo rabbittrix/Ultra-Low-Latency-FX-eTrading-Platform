@@ -15,6 +15,20 @@ members = [
     "crates/fx-liquidity-graph",
     "crates/fx-ai-execution",
     "crates/fx-deterministic-core",
+    "crates/fx-smc-common",
+    "crates/fx-smc-marketdata",
+    "crates/fx-smc-store",
+    "crates/fx-smc-replay",
+    "crates/fx-smc-structure",
+    "crates/fx-smc-liquidity",
+    "crates/fx-smc-sweep",
+    "crates/fx-smc-strategy",
+    "crates/fx-smc-backtest",
+    "crates/fx-smc-risk",
+    "crates/fx-smc-advisory",
+    "crates/fx-smc-journal",
+    "crates/fx-smc-execution",
+    "crates/fx-smc-benches",
     "services/market-data-service",
     "services/pricing-service",
     "services/matching-engine-service",
@@ -23,11 +37,14 @@ members = [
     "services/gateway-service",
     "services/liquidity-graph-service",
     "services/execution-engine",
+    "services/fx-smc-replay-cli",
+    "services/fx-smc-advisory-api",
 ]
+exclude = ["frontend/tauri-trading-ui/src-tauri"]
 resolver = "2"
 
 [workspace.package]
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 authors = ["Roberto de Souza <rabbittrix@hotmail.com>"]
 license = "Apache-2.0"
@@ -80,6 +97,18 @@ prometheus_exporter = "0.8.5"
 crossbeam = "0.8"
 crossbeam-channel = "0.5"
 crossbeam-queue = "0.3"
+rtrb = "0.3"
+
+# SMC / advisory domain
+blake3 = "1.5"
+toml = "0.8"
+arrow = { version = "53", default-features = false, features = ["chrono-tz"] }
+parquet = { version = "53", default-features = false, features = ["arrow", "snap"] }
+sqlx = { version = "0.8", default-features = false, features = [
+    "runtime-tokio",
+    "postgres",
+    "macros",
+] }
 
 # Utilities
 anyhow = "1.0"
@@ -96,6 +125,7 @@ tokio-tungstenite = "0.24"
 
 # Testing
 criterion = "0.5"
+proptest = "1.5"
 
 [profile.release]
 opt-level = 3
@@ -107,4 +137,13 @@ panic = "abort"
 [profile.dev]
 opt-level = 0
 debug = true
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+module_name_repetitions = "allow"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
 

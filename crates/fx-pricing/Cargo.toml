@@ -1,6 +1,6 @@
 [package]
 name = "fx-pricing"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 authors = ["Roberto de Souza <rabbittrix@hotmail.com>"]
 license = "Apache-2.0"

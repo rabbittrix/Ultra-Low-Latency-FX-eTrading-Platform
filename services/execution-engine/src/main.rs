@@ -7,6 +7,7 @@ use axum::routing::{get, post};
 use axum::{Json, Router};
 use futures_util::future::join_all;
 use fx_ai_execution::{AiExecutionClient, InferRequest, VenueFeatures};
+
 use fx_deterministic_core::OrderEventRing;
 use fx_liquidity_graph::{plan_execution, GraphPlanner, LiquidityGraph};
 use fx_utils::Result;
@@ -217,10 +218,13 @@ async fn main() -> Result<()> {
     tracing_subscriber::fmt().with_max_level(Level::INFO).init();
     info!("Starting Execution Engine (deterministic core integration)");
 
-    let ai_url =
-        std::env::var("AI_EXECUTION_URL").unwrap_or_else(|_| "http://127.0.0.1:8093".into());
+    // Default: in-process Rust scorer (no Python venv). Set AI_EXECUTION_MODE=http for remote.
     let ai = Arc::new(
-        AiExecutionClient::new(&ai_url).map_err(|e| fx_utils::Error::Internal(e.to_string()))?,
+        AiExecutionClient::from_env().map_err(|e| fx_utils::Error::Internal(e.to_string()))?,
+    );
+    info!(
+        ai_mode = ?ai.mode(),
+        "AI venue scoring backend"
     );
 
     let metrics = Arc::new(Metrics::new().map_err(|e| fx_utils::Error::Prometheus(e.to_string()))?);

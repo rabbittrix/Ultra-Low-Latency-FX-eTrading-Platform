@@ -16,6 +16,7 @@
 
 - [System Architecture](../flow-fx-et.md) (diagram + local/gateway notes)
 - [Service Overview](ARCHITECTURE.md)
+- [ADRs](adr/README.md) (SMC M0–M10 — [0001](adr/0001-smc-domain-coexistence-and-fixed-point.md) … [0011](adr/0011-smc-hardening-benches.md))
 - [API Documentation](http://localhost:8080/docs) (Swagger UI)
 - [Donations](../DONATION.md)
 

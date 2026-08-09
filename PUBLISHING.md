@@ -19,7 +19,7 @@ This guide explains how to publish the Rust crates from this project to [crates.
 
 ## Publishable Crates
 
-The following crates are designed to be published (current line: **0.1.2**):
+The following crates are designed to be published (current line: **0.1.3**):
 
 1. **fx-core** - Core matching engine and order book logic
 2. **fx-utils** - Shared utilities and common types

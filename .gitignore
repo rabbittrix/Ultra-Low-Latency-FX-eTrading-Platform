@@ -4,12 +4,21 @@
 *.pdb
 # Note: Cargo.lock should be committed for deterministic Docker/CI builds
 
-# Next.js
+# SMC research datasets (Parquet)
+/data/smc/
+
+# Next.js (legacy path)
 frontend/nextjs-trading-ui/.next/
 frontend/nextjs-trading-ui/out/
 frontend/nextjs-trading-ui/node_modules/
 frontend/nextjs-trading-ui/.env*.local
 frontend/nextjs-trading-ui/.vercel
+
+# Tauri trading UI
+frontend/tauri-trading-ui/dist/
+frontend/tauri-trading-ui/node_modules/
+frontend/tauri-trading-ui/src-tauri/target/
+frontend/tauri-trading-ui/.env*.local
 # Note: package-lock.json should be committed for deterministic builds
 
 # Python
@@ -39,9 +48,11 @@ Thumbs.db
 project_instructions.md
 tasks.md
 
-# Publishing scripts (generated, not tracked)
+# Publishing helper scripts (keep publish-all tracked)
 scripts/*.ps1
+!scripts/publish-all.ps1
 scripts/*.sh
+!scripts/publish-all.sh
 
 # Environment files
 .env

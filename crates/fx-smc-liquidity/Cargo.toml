@@ -1,0 +1,24 @@
+[package]
+name = "fx-smc-liquidity"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SMC liquidity mapper and fixed-point pool scoring."
+readme = "README.md"
+
+[dependencies]
+fx-smc-common = { path = "../fx-smc-common" }
+fx-smc-structure = { path = "../fx-smc-structure" }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+fx-smc-marketdata = { path = "../fx-smc-marketdata" }
+proptest = { workspace = true }
+
+[lints]
+workspace = true
+

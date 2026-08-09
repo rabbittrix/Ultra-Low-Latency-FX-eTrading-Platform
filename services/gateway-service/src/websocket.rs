@@ -105,7 +105,16 @@ pub async fn gateway_websocket_handler(ws: WebSocket, State(state): State<WebSoc
             };
 
             if let Err(e) = sender.send(Message::Text(json_msg)).await {
-                error!(error = %e, "Failed to send WebSocket message");
+                let msg = e.to_string();
+                // Client already closed — expected on disconnect / refresh, not a server fault.
+                if msg.contains("Sending after closing")
+                    || msg.contains("Connection closed")
+                    || msg.contains("closed connection")
+                {
+                    tracing::debug!(error = %e, "WebSocket send skipped (client closed)");
+                } else {
+                    warn!(error = %e, "Failed to send WebSocket message");
+                }
                 break;
             }
         }

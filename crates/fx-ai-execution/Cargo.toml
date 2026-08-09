@@ -5,7 +5,7 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Async client and types for AI-driven venue scoring (HTTP/gRPC-ready)."
+description = "In-process and optional HTTP venue scoring for AI-driven FX execution."
 
 [dependencies]
 serde = { workspace = true }

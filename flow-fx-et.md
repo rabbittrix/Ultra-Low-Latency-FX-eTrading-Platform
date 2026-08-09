@@ -3,7 +3,7 @@
 ```mermaid
 flowchart LR
     subgraph Frontend
-        UI[Next.js Trading UI]
+        UI[Tauri Trading UI]
     end
 
     subgraph Gateway
@@ -83,5 +83,5 @@ flowchart LR
 
 - **Gateway** nests proxied services and forwards the path remainder from `OriginalUri` (e.g. `/matching/audit` → matching `/audit`).
 - **Matching (`fx-core`)**: bid book sorted descending; `cancel_order` removes resting liquidity.
-- **UI**: Talks to the gateway over HTTP/WS at `NEXT_PUBLIC_API_URL` (default `127.0.0.1:8080`). Prefer `npm run dev:stack` for matching + liquidity + execution + gateway + Next on Windows.
-- **Publish**: crates.io release **0.1.2** includes `fx-liquidity-graph` and per-crate `DONATION.md` — see `PUBLISHING.md` / `scripts/publish-all.ps1`.
+- **UI**: Talks to the gateway over HTTP/WS at `VITE_API_URL` (default `127.0.0.1:8080`). Prefer `npm run dev:stack` for matching + risk + liquidity + execution (Rust AI) + gateway + Tauri on Windows.
+- **Publish**: crates.io release **0.1.3** includes `fx-liquidity-graph` and per-crate `DONATION.md` — see `PUBLISHING.md` / `scripts/publish-all.ps1`.

@@ -69,7 +69,7 @@ jobs:
           node-version: '20'
 
       - name: Generate package-lock.json if missing
-        working-directory: frontend/nextjs-trading-ui
+        working-directory: frontend/tauri-trading-ui
         shell: bash
         run: |
           if [ ! -f package-lock.json ]; then
@@ -81,25 +81,32 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('frontend/nextjs-trading-ui/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('frontend/tauri-trading-ui/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
       - name: Install dependencies
-        working-directory: frontend/nextjs-trading-ui
+        working-directory: frontend/tauri-trading-ui
         run: npm ci
 
       - name: Run linter
-        working-directory: frontend/nextjs-trading-ui
+        working-directory: frontend/tauri-trading-ui
         run: npm run lint
 
       - name: Check formatting
-        working-directory: frontend/nextjs-trading-ui
-        run: npm run format -- --check
+        working-directory: frontend/tauri-trading-ui
+        run: npm run format:check
 
-      - name: Build
-        working-directory: frontend/nextjs-trading-ui
+      - name: Build web UI (Vite)
+        working-directory: frontend/tauri-trading-ui
         run: npm run build
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Check Tauri Rust crate
+        working-directory: frontend/tauri-trading-ui/src-tauri
+        run: cargo check --locked || cargo check
 
   python:
     name: Python - Lint and Test
@@ -159,10 +166,13 @@ jobs:
       - name: Build Frontend
         uses: docker/build-push-action@v5
         with:
-          context: ./frontend/nextjs-trading-ui
-          file: ./frontend/nextjs-trading-ui/Dockerfile
+          context: ./frontend/tauri-trading-ui
+          file: ./frontend/tauri-trading-ui/Dockerfile
           push: false
+          load: true
           tags: fx-etrading:frontend-test
+          build-args: |
+            VITE_API_URL=http://127.0.0.1:8080
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

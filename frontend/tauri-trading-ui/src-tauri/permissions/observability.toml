@@ -1,0 +1,4 @@
+[[permission]]
+identifier = "allow-obs-collect"
+description = "Allow in-app observability collect (loopback health + metrics scrape)"
+commands.allow = ["obs_collect"]

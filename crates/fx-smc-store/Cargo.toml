@@ -1,0 +1,26 @@
+[package]
+name = "fx-smc-store"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "SMC persistence: Parquet ticks and optional Postgres profiles/journal/stats."
+readme = "README.md"
+
+[features]
+default = []
+postgres = ["dep:sqlx", "dep:tokio"]
+
+[dependencies]
+fx-smc-common = { path = "../fx-smc-common" }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+arrow = { workspace = true }
+parquet = { workspace = true }
+sqlx = { workspace = true, optional = true }
+tokio = { workspace = true, optional = true }
+
+[lints]
+workspace = true

@@ -1,0 +1,52 @@
+{
+  "name": "tauri-trading-ui",
+  "version": "0.1.3",
+  "private": true,
+  "type": "module",
+  "author": "Roberto de Souza <rabbittrix@hotmail.com>",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rabbittrix/Ultra-Low-Latency-FX-eTrading-Platform.git"
+  },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 1420",
+    "dev:stack": "node scripts/dev-stack.mjs",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md}\" \"scripts/**/*.mjs\" \"*.json\" \"*.ts\" \"*.js\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,css,md}\" \"scripts/**/*.mjs\""
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.5.0",
+    "@tauri-apps/plugin-opener": "^2.2.6",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.424.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.0",
+    "tailwind-merge": "^2.5.2"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.5.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^8.57.1",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.14",
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
+    "postcss": "^8.5.14",
+    "prettier": "^3.3.3",
+    "prettier-plugin-tailwindcss": "^0.6.6",
+    "tailwindcss": "^3.4.7",
+    "typescript": "^5.6.2",
+    "vite": "^6.0.3"
+  }
+}

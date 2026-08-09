@@ -1,0 +1,25 @@
+[package]
+name = "fx-smc-backtest"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Prefix-only SMC backtest and walk-forward with fixed-point costs (no look-ahead)."
+readme = "README.md"
+
+[dependencies]
+blake3 = { workspace = true }
+fx-smc-common = { path = "../fx-smc-common" }
+fx-smc-liquidity = { path = "../fx-smc-liquidity" }
+fx-smc-strategy = { path = "../fx-smc-strategy" }
+fx-smc-sweep = { path = "../fx-smc-sweep" }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+fx-smc-marketdata = { path = "../fx-smc-marketdata" }
+
+[lints]
+workspace = true

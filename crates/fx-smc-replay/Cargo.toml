@@ -1,0 +1,22 @@
+[package]
+name = "fx-smc-replay"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Deterministic SMC tick replay harness (live == replay event hash)."
+readme = "README.md"
+
+[dependencies]
+fx-smc-common = { path = "../fx-smc-common" }
+fx-smc-store = { path = "../fx-smc-store" }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+fx-smc-marketdata = { path = "../fx-smc-marketdata" }
+
+[lints]
+workspace = true
+
