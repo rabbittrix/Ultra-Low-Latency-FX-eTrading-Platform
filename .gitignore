@@ -73,3 +73,7 @@ coverage/
 book/
 site/
 
+
+# Nested cargo publish/verify targets
+**/target/
+
