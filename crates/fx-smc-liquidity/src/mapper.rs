@@ -313,10 +313,7 @@ fn isqrt_i128(n: i128) -> i64 {
 }
 
 fn saturating_u32(n: usize) -> u32 {
-    match u32::try_from(n) {
-        Ok(v) => v,
-        Err(_) => u32::MAX,
-    }
+    u32::try_from(n).unwrap_or(u32::MAX)
 }
 
 #[cfg(test)]
