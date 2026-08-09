@@ -23,11 +23,12 @@ pub struct PaperStats {
 
 impl PaperStats {
     fn recompute_win_rate(&mut self) {
-        self.win_rate_bps = if self.trades == 0 {
-            0
-        } else {
-            i64::try_from(self.wins.saturating_mul(10_000) / self.trades).unwrap_or(0)
-        };
+        self.win_rate_bps = self
+            .wins
+            .saturating_mul(10_000)
+            .checked_div(self.trades)
+            .and_then(|v| i64::try_from(v).ok())
+            .unwrap_or(0);
     }
 }
 
