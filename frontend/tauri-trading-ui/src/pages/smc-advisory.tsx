@@ -116,10 +116,7 @@ export default function SmcAdvisoryPage() {
             />
             <Stat label="Regime" value={result.regime.label} />
             <Stat label="Window score" value={String(result.window.score)} />
-            <Stat
-              label="Suitability"
-              value={result.suitability.suitable ? 'pass' : 'blocked'}
-            />
+            <Stat label="Suitability" value={result.suitability.suitable ? 'pass' : 'blocked'} />
             {result.window_color != null && (
               <div className="rounded border border-gray-800 bg-gray-900 p-4">
                 <p className="text-xs text-gray-500">Entry window</p>

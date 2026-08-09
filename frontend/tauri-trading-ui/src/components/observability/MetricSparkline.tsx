@@ -10,20 +10,14 @@ type Props = {
   stroke?: string;
 };
 
-export function MetricSparkline({
-  points,
-  className = '',
-  stroke = '#34d399',
-}: Props) {
+export function MetricSparkline({ points, className = '', stroke = '#34d399' }: Props) {
   const w = 320;
   const h = 96;
   const pad = 4;
 
   if (points.length === 0) {
     return (
-      <div
-        className={`flex h-24 items-center justify-center text-xs text-gray-500 ${className}`}
-      >
+      <div className={`flex h-24 items-center justify-center text-xs text-gray-500 ${className}`}>
         No samples
       </div>
     );
@@ -56,7 +50,12 @@ export function MetricSparkline({
 
   return (
     <div className={`relative ${className}`}>
-      <svg viewBox={`0 0 ${w} ${h}`} className="h-24 w-full" role="img" aria-label="metric sparkline">
+      <svg
+        viewBox={`0 0 ${w} ${h}`}
+        className="h-24 w-full"
+        role="img"
+        aria-label="metric sparkline"
+      >
         <polyline
           fill="none"
           stroke={stroke}

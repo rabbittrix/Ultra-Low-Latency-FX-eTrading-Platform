@@ -225,7 +225,14 @@ function killAll() {
  * @param {NodeJS.ProcessEnv} [env]
  * @param {string[]} [args]
  */
-async function startRustService(label, binary, healthUrl, healthPred, env = process.env, args = []) {
+async function startRustService(
+  label,
+  binary,
+  healthUrl,
+  healthPred,
+  env = process.env,
+  args = [],
+) {
   console.log(`[dev-stack] Starting ${label}…`);
   const child = spawn(binary, args, {
     cwd: repoRoot,
@@ -339,11 +346,8 @@ async function main() {
     (t) => jsonHealthMatchesService(t, 'matching-engine-service'),
   );
 
-  await startRustService(
-    'risk-service (8084)',
-    riskExe,
-    'http://127.0.0.1:8084/health',
-    (t) => jsonHealthMatchesService(t, 'risk-service'),
+  await startRustService('risk-service (8084)', riskExe, 'http://127.0.0.1:8084/health', (t) =>
+    jsonHealthMatchesService(t, 'risk-service'),
   );
 
   await startRustService(

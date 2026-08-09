@@ -348,7 +348,9 @@ export async function runSmcAnalyze(tickCount = 400): Promise<SmcAnalyzeResponse
     return response.json();
   } catch (e) {
     if (e instanceof DOMException && e.name === 'AbortError') {
-      throw new Error('Analyze timed out after 90s — try fewer ticks (e.g. 400) or restart fx-smc-advisory-api');
+      throw new Error(
+        'Analyze timed out after 90s — try fewer ticks (e.g. 400) or restart fx-smc-advisory-api',
+      );
     }
     throw e;
   } finally {

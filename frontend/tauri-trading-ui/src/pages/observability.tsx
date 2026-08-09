@@ -4,7 +4,12 @@
 
 import { MetricSparkline } from '@/components/observability/MetricSparkline';
 import { collectObservability, type ChartSeries, type ServiceProbe } from '@/lib/observability';
-import { getSmcApiPublicBase, getSmcHealth, runSmcAnalyze, type SmcAnalyzeResponse } from '@/lib/api';
+import {
+  getSmcApiPublicBase,
+  getSmcHealth,
+  runSmcAnalyze,
+  type SmcAnalyzeResponse,
+} from '@/lib/api';
 import { Activity, RefreshCw } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';

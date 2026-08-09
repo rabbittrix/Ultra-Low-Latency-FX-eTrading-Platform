@@ -210,14 +210,10 @@ function parseMetric(body: string, metric: string): number | null {
   for (const raw of body.split('\n')) {
     const line = raw.trim();
     if (!line || line.startsWith('#')) continue;
-    if (
-      !(
-        line.startsWith(metric) &&
-        (line[metric.length] === '{' ||
-          line[metric.length] === ' ' ||
-          line[metric.length] === '\t')
-      )
-    ) {
+    if (!(
+      line.startsWith(metric) &&
+      (line[metric.length] === '{' || line[metric.length] === ' ' || line[metric.length] === '\t')
+    )) {
       continue;
     }
     const parts = line.split(/\s+/);
